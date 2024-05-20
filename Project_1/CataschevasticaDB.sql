@@ -24,7 +24,7 @@ CREATE TABLE Customer
   City VARCHAR(20) NOT NULL,
   PostalCode INT NOT NULL,
   Street VARCHAR(50) NOT NULL,
-  CompanyName VARCHAR(50) NOT NULL,
+  CompanyName VARCHAR(50) NULL,
   PRIMARY KEY (CustomerID)
 );
 
@@ -68,11 +68,11 @@ CREATE TABLE Orders
 (
   OrderID INT IDENTITY,
   OrderStatus VARCHAR(16) NOT NULL,
-  CompletedAt DATETIME NOT NULL,
+  CompletedAt DATETIME NULL,
   SubmittedAt DATETIME NOT NULL,
-  AssignedAt DATETIME NOT NULL,
-  DeliveryAt DATETIME NOT NULL,
-  CancelledAt DATETIME NOT NULL,
+  AssignedAt DATETIME NULL,
+  DeliveryAt DATETIME NULL,
+  CancelledAt DATETIME NULL,
   CustomerID INT NOT NULL,
   MemberID INT NOT NULL,
   PartnerID INT NOT NULL,
