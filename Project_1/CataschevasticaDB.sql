@@ -1,64 +1,86 @@
+-- Create the database
+CREATE DATABASE Cataschevastica;
+GO
+
+-- Switch to the new database
+USE Cataschevastica;
+GO
+
+-- Table Creation
 CREATE TABLE Supplier
 (
   SupplierID INT IDENTITY,
-  Name VARCHAR(50) NOT NULL,
-  Telephone VARCHAR(15) NOT NULL,
+  Name NVARCHAR(50) NOT NULL,
+  Phone VARCHAR(20) NOT NULL,
   PRIMARY KEY (SupplierID)
 );
 
-CREATE TABLE ProductionMember
+CREATE TABLE Department
 (
-  MemberID INT IDENTITY,
-  FirstName VARCHAR(50) NOT NULL,
-  LastName VARCHAR(50) NOT NULL,
-  PRIMARY KEY (MemberID)
+  DepartmentID INT IDENTITY NOT NULL,
+  Name VARCHAR(50) NOT NULL,
+  PRIMARY KEY (DepartmentID)
+);
+
+CREATE TABLE ProductionEmployee
+(
+  EmployeeID INT IDENTITY,
+  FirstName NVARCHAR(50) NOT NULL,
+  LastName NVARCHAR(50) NOT NULL,
+  DepartmentID INT NOT NULL,
+  PRIMARY KEY (EmployeeID),
+  FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
+  CONSTRAINT CHK_ProductionMember CHECK (DepartmentID = 1)
 );
 
 CREATE TABLE Customer
 (
-  FirstName VARCHAR(50) NOT NULL,
-  LastName VARCHAR(50) NOT NULL,
   CustomerID INT IDENTITY,
+  FirstName NVARCHAR(50) NOT NULL,
+  LastName NVARCHAR(50) NOT NULL,
   Email VARCHAR(30) NOT NULL,
-  Telephone VARCHAR(15) NOT NULL,
-  City VARCHAR(20) NOT NULL,
+  Phone VARCHAR(20) NOT NULL,
+  Address NVARCHAR(60) NOT NULL,
+  City NVARCHAR(20) NOT NULL,
+  Region NVARCHAR(20) NOT NULL,
   PostalCode INT NOT NULL,
-  Street VARCHAR(50) NOT NULL,
+  Country NVARCHAR(24) NOT NULL,
   CompanyName VARCHAR(50) NULL,
   PRIMARY KEY (CustomerID)
 );
 
-CREATE TABLE LogisticPartner
+CREATE TABLE LogisticsPartner
 (
   PartnerID INT IDENTITY,
-  Name VARCHAR(50) NOT NULL,
-  Telephone VARCHAR(15) NOT NULL,
+  Name NVARCHAR(50) NOT NULL,
+  Phone VARCHAR(20) NOT NULL,
   PRIMARY KEY (PartnerID)
 );
 
 CREATE TABLE Product
 (
-  Name VARCHAR(50) NOT NULL,
-  SKU INT IDENTITY(10000, 1),
-  Length NUMERIC(12, 4) NOT NULL,
-  Width NUMERIC(12, 4) NOT NULL,
-  Thickness NUMERIC(12, 4) NOT NULL,
-  Weight NUMERIC(12, 4) NOT NULL,
+  SKU VARCHAR(50) NOT NULL,
+  Name NVARCHAR(50) NOT NULL,
+  Length DECIMAL(12, 4) NOT NULL,
+  Width DECIMAL(12, 4) NOT NULL,
+  Thickness DECIMAL(12, 4) NOT NULL,
+  Weight DECIMAL(12, 4) NOT NULL,
   Colour VARCHAR(20) NOT NULL,
-  ComplianceID VARCHAR(100) NOT NULL,
-  Cost NUMERIC(10, 2) NOT NULL,
+  ComplianceStandards VARCHAR(255) NOT NULL,
+  CostPerUnit DECIMAL(10, 2) NOT NULL,
   Quantity INT NOT NULL,
   EstimatedTime INT NOT NULL,
   ProductStatus VARCHAR(20) NOT NULL,
-  MemberID INT NOT NULL,
+  ProductionMemberID INT NOT NULL,
   PRIMARY KEY (SKU),
-  FOREIGN KEY (MemberID) REFERENCES ProductionMember(MemberID)
+  FOREIGN KEY (ProductionMemberID) REFERENCES ProductionEmployee(EmployeeID),
+  CONSTRAINT CHK_ProductStatus CHECK (ProductStatus IN ('in production', 'ready', 'available', 'not available'))
 );
 
 CREATE TABLE RawMaterial
 (
-  Name VARCHAR(50) NOT NULL,
   MaterialID INT IDENTITY,
+  Name NVARCHAR(50) NOT NULL,
   SupplierID INT NOT NULL,
   PRIMARY KEY (MaterialID),
   FOREIGN KEY (SupplierID) REFERENCES Supplier(SupplierID)
@@ -67,24 +89,24 @@ CREATE TABLE RawMaterial
 CREATE TABLE Orders
 (
   OrderID INT IDENTITY,
-  OrderStatus VARCHAR(16) NOT NULL,
-  CompletedAt DATETIME NULL,
-  SubmittedAt DATETIME NOT NULL,
-  AssignedAt DATETIME NULL,
-  DeliveryAt DATETIME NULL,
-  CancelledAt DATETIME NULL,
+  OrderStatus VARCHAR(20) NOT NULL,
+  SubmittedAt DATETIME2 NOT NULL,
+  DeliveryAt DATETIME2 NULL,
+  CompletedAt DATETIME2 NULL,
+  CancelledAt DATETIME2 NULL,
   CustomerID INT NOT NULL,
-  MemberID INT NOT NULL,
-  PartnerID INT NOT NULL,
+  EmployeeID INT NOT NULL,
+  DeliveryPartnerID INT NOT NULL,
   PRIMARY KEY (OrderID),
   FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-  FOREIGN KEY (MemberID) REFERENCES ProductionMember(MemberID),
-  FOREIGN KEY (PartnerID) REFERENCES LogisticPartner(PartnerID)
+  FOREIGN KEY (EmployeeID) REFERENCES ProductionEmployee(EmployeeID),
+  FOREIGN KEY (DeliveryPartnerID) REFERENCES LogisticsPartner(PartnerID),
+  CONSTRAINT CHK_OrderStatus CHECK (OrderStatus IN ('in process', 'in delivery', 'completed', 'cancelled'))
 );
 
 CREATE TABLE ProductMaterials
 (
-  SKU INT NOT NULL,
+  SKU VARCHAR(50) NOT NULL,
   MaterialID INT NOT NULL,
   PRIMARY KEY (SKU, MaterialID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU),
@@ -93,9 +115,9 @@ CREATE TABLE ProductMaterials
 
 CREATE TABLE OrderDetails
 (
-  UnitsofProduct INT NOT NULL,
   OrderID INT NOT NULL,
-  SKU INT NOT NULL,
+  SKU VARCHAR(50) NOT NULL,
+  UnitsofProduct INT NOT NULL,
   PRIMARY KEY (OrderID, SKU),
   FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU)
