@@ -1,8 +1,10 @@
--- SELECT QUERIES
-
+-- QUERIES
 ------------------------------------------------------------------------------------------------
+
 -- a) List of all products ordered yesterday (so that production can start)
+
 /*
+-- just for testing
 SELECT o.OrderID, SKU, UnitsofProduct, OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt
 FROM Orders o
 INNER JOIN OrderDetails od 
@@ -37,7 +39,8 @@ GROUP BY P.SKU, NAME;
 ------------------------------------------------------------------------------------------------
 
 --b) List of all finished orders ready to deliver
-/* -- check
+/*
+-- testing
 SELECT O.OrderID, OrderStatus, SubmittedAt, DeliveryAt, CustomerID, EmployeeID ,UnitsofProduct, SKU
 FROM Orders O
 INNER JOIN OrderDetails OD ON O.OrderID = OD.OrderID
@@ -48,8 +51,11 @@ SELECT OrderID, OrderStatus, SubmittedAt, DeliveryAt, CustomerID
 FROM Orders
 WHERE OrderStatus = 'in delivery'
 GROUP BY OrderID, OrderStatus, SubmittedAt, DeliveryAt, CustomerID
+
 ------------------------------------------------------------------------------------------------
+
 --c. List of all orders per customer, completed, pending, cancelled
+
 SELECT 
 	Orders.CustomerID, 
 	Customer.FirstName, 
@@ -61,6 +67,7 @@ SELECT
 FROM Orders
 INNER JOIN Customer ON Orders.CustomerID = Customer.CustomerID
 ORDER BY CustomerID, OrderStatus
+
 /*
 -- List of all orders per customer, but also showing the products included in the order
 SELECT 
@@ -100,7 +107,9 @@ WHERE Orders.CustomerID = 1
 ORDER BY OrderStatus
 */
 ------------------------------------------------------------------------------------------------
+
 --d) List of all products with quantities, ordered and delivered, ordered and pending,cancelled
+
 /*
 -- Check
 SELECT *
@@ -110,8 +119,8 @@ JOIN OrderDetails OD ON O.OrderID = OD.OrderID
 
 SELECT Name, OD.SKU, SUM(UnitsofProduct) AS TotalUnitsOrdered, OrderStatus
 FROM Orders O
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID
-JOIN Product P ON P.SKU = OD.SKU
+INNER JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+INNER JOIN Product P ON P.SKU = OD.SKU
 GROUP BY  OD.SKU, Name, OrderStatus
 ORDER BY Name
 
@@ -128,6 +137,7 @@ ORDER BY e.EmployeeID, o.OrderStatus, o.SubmittedAt;
 ------------------------------------------------------------------------------------------------
 
 -- f) Daily order and production report
+
 SELECT CAST(GETDATE() AS DATE) AS OrderDate,
        COUNT(o.OrderID) AS TotalOrders,
        SUM(CASE WHEN o.OrderStatus = 'completed' THEN 1 ELSE 0 END) AS CompletedOrders,
@@ -137,7 +147,18 @@ FROM Orders o
 WHERE CAST(o.SubmittedAt AS DATE) = CAST(GETDATE() AS DATE) 
 	  OR CAST(o.CompletedAt AS DATE) = CAST(GETDATE() AS DATE)
 	  OR CAST(o.DeliveryAt AS DATE) = CAST(GETDATE() AS DATE) 
+	  OR CAST(o.CancelledAt AS DATE) = CAST(GETDATE() AS DATE);
+
+SELECT o.OrderID, SKU, UnitsofProduct, OrderStatus, CAST(SubmittedAt AS DATE) AS SubmittedAt, 
+CAST(DeliveryAt AS DATE) AS DeliveryAt, CAST(CompletedAt AS DATE) AS CompletedAt, CAST(CancelledAt AS DATE) AS CancelledAt
+FROM Orders o
+INNER JOIN OrderDetails od 
+ON o.OrderID = od.OrderID 
+WHERE CAST(o.SubmittedAt AS DATE) = CAST(GETDATE() AS DATE) 
+	  OR CAST(o.CompletedAt AS DATE) = CAST(GETDATE() AS DATE)
+	  OR CAST(o.DeliveryAt AS DATE) = CAST(GETDATE() AS DATE) 
 	  OR CAST(o.CancelledAt AS DATE) = CAST(GETDATE() AS DATE)
+ORDER BY OrderID;
 
 ------------------------------------------------------------------------------------------------
 
@@ -184,8 +205,12 @@ FROM Orders
 WHERE Orders.OrderStatus = 'completed'
 ORDER BY DATEPART(month, Orders.CompletedAt), Orders.CompletedAt
 */
+
+
 ------------------------------------------------------------------------------------------------
+
 -- 5.a) Create an Order
+
 --Step 1
 -- Enter Details of Order
 DECLARE @CustomerID INT = 5;			-- Replace with actual CustomerID
@@ -212,6 +237,7 @@ INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES
 (@OrderDetailID, @SKU, @UnitsofProduct);
 
 ------------------------------------------------------------------------------------------------
+
 --5.b) Finalise production
 
 DECLARE @SKUproduction VARCHAR(50) = 'SKU001';  -- Replace with actual product's SKU
@@ -221,6 +247,7 @@ SET ProductStatus = 'available'
 WHERE SKU = @SKUproduction;
 
 ------------------------------------------------------------------------------------------------
+
 --5.c) Finalise an order and delivery
 
 DECLARE @Order_id INT = 1;			 -- Replace with actual OrderID

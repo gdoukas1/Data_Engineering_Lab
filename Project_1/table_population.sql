@@ -142,7 +142,6 @@ INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, Cancelled
 ('in process', GETDATE(), NULL, NULL, NULL, 8, 7, 15);
 
 
-
 INSERT INTO ProductMaterials (SKU, MaterialID) VALUES 
 ('SKU001', 1),
 ('SKU002', 2),
@@ -194,4 +193,12 @@ INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES
 (17, 'SKU002', 30),
 (18, 'SKU002', 70),
 (18, 'SKU012', 80),
-(19, 'SKU011', 111);
+(19, 'SKU011', 111),
+(20, 'SKU010', 20),
+(21, 'SKU003', 30),
+(22, 'SKU006', 100),
+(22, 'SKU012', 50),
+(23, 'SKU015', 100),
+(24, 'SKU007', 135),
+(25, 'SKU013', 170),
+(19, 'SKU002', 130);
