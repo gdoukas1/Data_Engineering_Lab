@@ -11,14 +11,14 @@ CREATE TABLE Supplier
 (
   SupplierID INT IDENTITY,
   Name NVARCHAR(50) NOT NULL,
-  Phone VARCHAR(20) NOT NULL,
+  Phone  VARCHAR(20) UNIQUE NOT NULL,
   PRIMARY KEY (SupplierID)
 );
 
 CREATE TABLE Department
 (
   DepartmentID INT IDENTITY NOT NULL,
-  Name VARCHAR(50) NOT NULL,
+  Name  VARCHAR(50) UNIQUE NOT NULL,
   PRIMARY KEY (DepartmentID)
 );
 
@@ -38,8 +38,8 @@ CREATE TABLE Customer
   CustomerID INT IDENTITY,
   FirstName NVARCHAR(50) NOT NULL,
   LastName NVARCHAR(50) NOT NULL,
-  Email VARCHAR(30) NOT NULL,
-  Phone VARCHAR(20) NOT NULL,
+  Email VARCHAR(30) UNIQUE NOT NULL,
+  Phone VARCHAR(20) UNIQUE NOT NULL,
   Address NVARCHAR(60) NOT NULL,
   City NVARCHAR(20) NOT NULL,
   Region NVARCHAR(20) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE LogisticsPartner
 (
   PartnerID INT IDENTITY,
   Name NVARCHAR(50) NOT NULL,
-  Phone VARCHAR(20) NOT NULL,
+  Phone VARCHAR(20) UNIQUE NOT NULL,
   PRIMARY KEY (PartnerID)
 );
 
@@ -67,14 +67,12 @@ CREATE TABLE Product
   Weight DECIMAL(12, 4) NOT NULL,
   Colour VARCHAR(20) NOT NULL,
   ComplianceStandards VARCHAR(255) NOT NULL,
-  CostPerUnit DECIMAL(10, 2) NOT NULL,
-  Quantity INT NOT NULL,
+  CostofProduct DECIMAL(10, 2) NOT NULL,
+  Quantity INT NOT NULL DEFAULT 1,
   EstimatedTime INT NOT NULL,
   ProductStatus VARCHAR(20) NOT NULL,
-  ProductionMemberID INT NOT NULL,
   PRIMARY KEY (SKU),
-  FOREIGN KEY (ProductionMemberID) REFERENCES ProductionEmployee(EmployeeID),
-  CONSTRAINT CHK_ProductStatus CHECK (ProductStatus IN ('in production', 'ready', 'available', 'not available'))
+  CONSTRAINT CHK_ProductStatus CHECK (ProductStatus IN ('in production', 'available', 'not available'))
 );
 
 CREATE TABLE RawMaterial
