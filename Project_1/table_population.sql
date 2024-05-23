@@ -112,32 +112,35 @@ INSERT INTO RawMaterial (Name, SupplierID) VALUES
 ('Ceramic', 15);
 
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 
+('completed', '2024-02-10 10:00:00', '2024-02-12 11:00:00', '2024-02-13 13:00:00', NULL, 15, 7, 15),
+('in process', '2024-02-22 17:00:00', NULL, NULL, NULL, 3, 9, 10),
+('in process', '2024-03-01 14:00:00', NULL, NULL, NULL, 3, 13, 9),
+('in process', '2024-03-02 09:00:00', NULL, NULL, NULL, 6, 6, 6),
+('cancelled', '2024-03-05 14:00:00', NULL, NULL, '2024-03-06 09:00:00', 4, 12, 8),
+('completed', '2024-03-21 10:00:00', '2024-03-24 11:00:00', '2024-03-26 13:00:00', NULL, 15, 7, 12),
+('in delivery', '2024-04-01 13:00:00', '2024-04-03 11:00:00', NULL, NULL, 7, 8, 1),
+('in process', '2024-04-10 10:00:00', NULL, NULL, NULL, 9, 2, 9),
+('completed', '2024-04-12 09:00:00', '2024-04-16 09:00:00', '2024-04-16 18:00:00', NULL, 12, 2, 6),
+('in delivery', '2024-04-25 09:00:00', '2024-05-01 09:00:00', NULL, NULL, 2, 4, 6),
+('cancelled', '2024-04-27 08:00:00', NULL, NULL, '2024-04-27 16:00:00', 8, 7, 6),
+('completed', '2024-04-30 15:00:00', '2024-05-02 10:00:00', '2024-05-04 12:00:00', NULL, 5, 5, 5),
 ('in process', '2024-05-01 10:00:00', NULL, NULL, NULL, 1, 5, 7),
-('completed', '2024-04-25 09:00:00', '2024-05-01 09:00:00', '2024-05-02 10:00:00', NULL, 2, 4, 6),
 ('in delivery', '2024-05-01 11:00:00', '2024-05-03 10:00:00', NULL, NULL, 3, 3, 3),
-('cancelled', '2024-05-02 14:00:00', NULL, NULL, '2024-05-03 09:00:00', 4, 12, 8),
-('completed', '2024-04-30 15:00:00', '2024-05-05 10:00:00', '2024-05-06 12:00:00', NULL, 5, 5, 5),
-('in process', '2024-05-02 09:00:00', NULL, NULL, NULL, 6, 6, 6),
-('in delivery', '2024-05-01 13:00:00', '2024-05-04 11:00:00', NULL, NULL, 7, 8, 1),
-('completed', '2024-04-27 08:00:00', '2024-05-02 10:00:00', '2024-05-03 14:00:00', NULL, 8, 7, 6),
-('in process', '2024-05-03 10:00:00', NULL, NULL, NULL, 9, 2, 9),
-('cancelled', '2024-05-01 12:00:00', NULL, NULL, '2024-05-02 09:00:00', 10, 1, 5),
-('in delivery', '2024-05-02 11:00:00', '2024-05-05 13:00:00', NULL, NULL, 11, 11, 11),
-('completed', '2024-04-29 09:00:00', '2024-05-03 10:00:00', '2024-05-04 11:00:00', NULL, 12, 2, 6),
-('in process', '2024-05-01 14:00:00', NULL, NULL, NULL, 3, 13, 9),
-('in delivery', '2024-05-02 15:00:00', '2024-05-06 09:00:00', NULL, NULL, 14, 4, 14),
-('completed', '2024-04-30 10:00:00', '2024-05-04 11:00:00', '2024-05-05 13:00:00', NULL, 15, 7, 15);
-INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID) VALUES ('completed', '2024-05-21 10:00:00', '2024-05-24 11:00:00', '2024-05-26 13:00:00', NULL, 15, 7);
-INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES ('in process', '2024-05-22 17:00:00', NULL, NULL, NULL, 3, 9, 10);
-INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES ('in process', '2024-05-22 09:30:00', NULL, NULL, NULL, 4, 5, 2);
-INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES ('in delivery', '2024-05-19 09:30:00', '2024-05-23 12:30:00', NULL, NULL, 3, 7, 11);
+('cancelled', '2024-05-08 12:00:00', NULL, NULL, '2024-05-9 10:00:00', 10, 1, 5),
+('in delivery', '2024-05-15 11:00:00', '2024-05-18 13:00:00', NULL, NULL, 11, 11, 11),
+('in delivery', '2024-05-20 15:00:00', '2024-05-22 09:00:00', NULL, NULL, 14, 4, 14),
+('in process', '2024-05-22 09:30:00', NULL, NULL, NULL, 4, 5, 2),
+('in delivery', '2024-05-22 09:30:00', '2024-05-23 12:30:00', NULL, NULL, 3, 7, 11);
+
+--to produce results for the daily report query
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 
-('completed', '2024-05-21 10:00:00', '2024-05-24 11:00:00', '2024-05-23 13:00:00', NULL, 15, 7, 15),
-('cancelled', '2024-05-21 10:00:00', NULL ,NULL , '2024-05-23 13:00:00', 1, 8, 12),
-('in delivery', '2024-05-21 10:00:00', '2024-05-23 11:00:00', '2024-05-24 13:00:00', NULL, 12, 9, 11),
-('in delivery', '2024-05-21 10:00:00', '2024-05-23 11:00:00', '2024-05-24 13:00:00', NULL, 10, 3, 8),
-('completed', '2024-05-21 10:00:00', '2024-05-21 11:00:00', '2024-05-23 13:00:00', NULL, 11, 2, 6),
-('in process', '2024-05-23 10:00:00', '2024-05-24 11:00:00', '2024-05-26 13:00:00', NULL, 8, 7, 15);
+('completed', DATEADD(day, -4, GETDATE()), DATEADD(day, -1, GETDATE()), GETDATE(), NULL, 11, 2, 6),
+('completed', DATEADD(day, -3, GETDATE()), DATEADD(day, -2, GETDATE()), GETDATE(), NULL, 15, 7, 15),
+('in delivery', DATEADD(day, -2, GETDATE()), GETDATE(), NULL, NULL, 12, 9, 11),
+('in delivery', DATEADD(day, -1, GETDATE()), GETDATE(), NULL, NULL, 10, 3, 8),
+('cancelled', DATEADD(day, -1, GETDATE()), NULL ,NULL , GETDATE(), 1, 8, 12),
+('in process', GETDATE(), NULL, NULL, NULL, 8, 7, 15);
+
 
 
 INSERT INTO ProductMaterials (SKU, MaterialID) VALUES 
@@ -172,23 +175,23 @@ INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES
 (6, 'SKU012', 150),
 (7, 'SKU013', 50),
 (7, 'SKU014', 100),
-(8, 'SKU015', 70);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (13, 'SKU001', 50);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (16, 'SKU015', 50);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (17, 'SKU004', 40);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (17, 'SKU006', 30);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (17, 'SKU002', 30);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (10, 'SKU004', 80);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (18, 'SKU002', 70);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (18, 'SKU012', 80);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (11, 'SKU007', 70);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (11, 'SKU013', 20);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (14, 'SKU014', 100);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (14, 'SKU009', 50);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (14, 'SKU001', 10);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (19, 'SKU011', 111);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (9, 'SKU007', 90);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (9, 'SKU012', 190);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (12, 'SKU002', 150);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (15, 'SKU006', 30);
-INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES (15, 'SKU008', 20);
+(8, 'SKU015', 70),
+(9, 'SKU007', 90),
+(9, 'SKU012', 190),
+(10, 'SKU004', 80),
+(11, 'SKU007', 70),
+(11, 'SKU013', 20),
+(12, 'SKU002', 150),
+(13, 'SKU001', 50),
+(14, 'SKU014', 100),
+(14, 'SKU009', 50),
+(14, 'SKU001', 10),
+(15, 'SKU006', 30),
+(15, 'SKU008', 20),
+(16, 'SKU015', 50),
+(17, 'SKU004', 40),
+(17, 'SKU006', 30),
+(17, 'SKU002', 30),
+(18, 'SKU002', 70),
+(18, 'SKU012', 80),
+(19, 'SKU011', 111);
