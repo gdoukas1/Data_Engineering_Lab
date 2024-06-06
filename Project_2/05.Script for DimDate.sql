@@ -7,8 +7,8 @@ USE CataschevasticaDW
 GO
 
 
-DECLARE @StartDate DATETIME = '2016-01-01' --Starting value of Date Range
-DECLARE @EndDate DATETIME = '2018-12-31' --End Value of Date Range
+DECLARE @StartDate DATETIME = '2023-01-01' --Starting value of Date Range
+DECLARE @EndDate DATETIME = '2025-12-31' --End Value of Date Range
 
 --SELECT DATEPART(QQ  , Getdate()) as DayOfMonthValue
 --SELECT CONVERT (char(8),Getdate(),112)
@@ -60,7 +60,9 @@ CREATE TABLE [dbo].[DimDate]
         [IsWeekday] BIT,-- 0=Week End ,1=Week Day
         [HolidayUSA] VARCHAR(50),--Name of Holiday in US
         [IsHolidayUK] BIT Null, -- Flag 1=National Holiday, 0-No National Holiday
-        [HolidayUK] VARCHAR(50) Null --Name of Holiday in UK
+        [HolidayUK] VARCHAR(50) Null, --Name of Holiday in UK
+		[IsHolidayGR] BIT Null, -- Flag 1=National Holiday, 0-No National Holiday
+		[HolidayGR] VARCHAR(50) Null --Name of Holiday in Greece
     )
 ;
 
@@ -228,12 +230,71 @@ BEGIN
             WHEN 6 THEN 1
             WHEN 7 THEN 0
             END AS IsWeekday,
-        NULL AS HolidayUSA, Null, Null
+        NULL AS HolidayUSA, 
+		NULL AS IsHolidayUK, 
+		NULL AS HolidayUK,
+		NULL AS IsHolidayGR,
+		NULL AS HolidayGR
 
     SET @CurrentDate = DATEADD(DD, 1, @CurrentDate)
 END
 
 
+/* Add HOLIDAYS Greece */
+/* For Easter, you should do this for every year INDIVIDUALLY */
+/* For now we assume that these dates are always on the same date */
+
+-- New Year's Day:  Jan 1
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'New Year''s Day'
+    WHERE [Month] = 1 AND [DayOfMonth]  = 1
+-- Epiphany: Jan 6
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Epiphany'
+    WHERE [Month] = 1 AND [DayOfMonth]  = 6
+-- Clean Monday: Mar 18 (2024 date)
+   UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Clean Monday'
+    WHERE [Month] = 3 AND [DayOfMonth]  = 18
+-- National Holiday: Mar 25
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'National Holiday'
+    WHERE [Month] = 3 AND [DayOfMonth]  = 25
+-- 	Orthodox Good Friday: May 3 (2024 date)
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Good Friday'
+    WHERE [Month] = 5 AND [DayOfMonth]  = 3
+-- Orthodox Easter Monday: May 6 (2024 date)
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Easter Monday'
+    WHERE [Month] = 5 AND [DayOfMonth]  = 6
+-- Labor Day: May 7 (2024 date)
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Labor Day'
+    WHERE [Month] = 5 AND [DayOfMonth]  = 7
+-- Orthodox Holy Spirit Monday: Jun 24 (2024 date)
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Holy Spirit Monday'
+    WHERE [Month] = 6 AND [DayOfMonth]  = 24
+-- Dormition of the Holy Virgin: Aug 15
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Dormition of the Holy Virgin'
+    WHERE [Month] = 8 AND [DayOfMonth]  = 15
+-- National Holiday: Oct 28
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'National Holiday'
+    WHERE [Month] = 10 AND [DayOfMonth]  = 28
+--	Christmas: Dec 25
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Christmas Day'
+    WHERE [Month] = 12 AND [DayOfMonth]  = 25
+--	Second Day Of Christmas: Dec 26
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Second Day Of Christmas'
+    WHERE [Month] = 12 AND [DayOfMonth]  = 26
+
+    UPDATE [dbo].[DimDate]
+    SET IsHolidayGR = CASE WHEN HolidayGR IS NULL THEN 0 WHEN HolidayGR IS NOT NULL THEN 1 END
 
 
 /* Add HOLIDAYS UK */
@@ -458,5 +519,3 @@ END
 
 
  SELECT * FROM DimDate
-
-
