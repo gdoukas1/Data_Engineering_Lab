@@ -68,15 +68,18 @@ CREATE TABLE DimProduct(
 --4. Create Sales Fact Table
 
 CREATE TABLE FactSales(
+	SalesID INT IDENTITY NOT NULL,
+	OrderStatus VARCHAR(20) NOT NULL,
+	OrderID INT NOT NULL,
     ProductKey INT NOT NULL,
     CustomerKey INT NOT NULL,
     EmployeeKey INT NOT NULL,
 	DeliveryPartnerID INT NOT NULL,
-    OrderID INT NOT NULL,
 	OrderDateKey INT NOT NULL,
     ShippedDateKey INT,
 	RecievedDateKey INT,
 	CancellationDateKey INT,
     Quantity INT NOT NULL,
+	Price DECIMAL(10, 2) NOT NULL,
     ExtendedPriceAmount FLOAT NOT NULL,
 );

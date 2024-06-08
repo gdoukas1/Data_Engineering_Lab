@@ -35,15 +35,15 @@ SELECT SKU, Name, ProductStatus, Price, EstimatedTime, Length, Width,
 
 --4
 
-INSERT INTO FactSales(ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID, OrderID, 
+INSERT INTO FactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
 	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
-	Quantity, ExtendedPriceAmount)
-SELECT ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID, OrderID,
+	Quantity, Price, ExtendedPriceAmount)
+SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
     CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
     CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT),
 	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT),
 	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT),
-    UnitsofProduct, [stagingSales].[Price]*[UnitsofProduct]
+    UnitsofProduct, [stagingSales].[Price], [stagingSales].[Price]*[UnitsofProduct]
     FROM CataschevasticaStaging.dbo.Sales stagingSales
 	INNER JOIN CataschevasticaDW.dbo.DimCustomer
 		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
@@ -52,22 +52,4 @@ SELECT ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID, OrderID,
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
 
-
-/*
-INSERT INTO FactSales(ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID, OrderID, 
-	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
-	Quantity, ExtendedPriceAmount)
-SELECT ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID, OrderID,
-    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
-    ISNULL(CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT), 00000000),  -- Doesn't work, dimDate does not have that date to reference it 
-	ISNULL(CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT), 00000000),
-	ISNULL(CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT), 00000000),
-    UnitsofProduct, [stagingSales].[Price]*[UnitsofProduct]
-    FROM CataschevasticaStaging.dbo.Sales stagingSales
-	INNER JOIN CataschevasticaDW.dbo.DimCustomer
-		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
-	INNER JOIN CataschevasticaDW.dbo.DimEmployee
-		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
-	INNER JOIN CataschevasticaDW.dbo.DimProduct
-		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
-*/
+SELECt * FROM CataschevasticaDW.dbo.FactSales
