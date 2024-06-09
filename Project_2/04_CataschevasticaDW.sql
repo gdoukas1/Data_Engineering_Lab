@@ -19,7 +19,8 @@ CREATE TABLE DimCustomer(
 	RowIsCurrent INT DEFAULT 1 NOT NULL,
     RowStartDate DATE DEFAULT '1899-12-31' NOT NULL,
     RowEndDate DATE DEFAULT '9999-12-31' NOT NULL,
-    RowChangeReason VARCHAR(200) NULL
+    RowChangeReason VARCHAR(200) NULL,
+	RowIsDeleted BIT DEFAULT 0,
 	PRIMARY KEY(CustomerKey)
 );
 
@@ -34,7 +35,8 @@ CREATE TABLE DimEmployee(
 	RowIsCurrent INT DEFAULT 1 NOT NULL,
     RowStartDate DATE DEFAULT '1899-12-31' NOT NULL,
     RowEndDate DATE DEFAULT '9999-12-31' NOT NULL,
-    RowChangeReason VARCHAR(200) NULL
+    RowChangeReason VARCHAR(200) NULL,
+	RowIsDeleted BIT DEFAULT 0,
 	PRIMARY KEY(EmployeeKey)
 );
 
@@ -60,7 +62,8 @@ CREATE TABLE DimProduct(
     RowIsCurrent INT DEFAULT 1 NOT NULL,
     RowStartDate DATE DEFAULT '1899-12-31' NOT NULL,
     RowEndDate DATE DEFAULT '9999-12-31' NOT NULL,
-    RowChangeReason VARCHAR(200) NULL
+    RowChangeReason VARCHAR(200) NULL,
+	RowIsDeleted BIT DEFAULT 0,
 	PRIMARY KEY(ProductKey)
 );
 

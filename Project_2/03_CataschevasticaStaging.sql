@@ -4,6 +4,12 @@ GO
 USE CataschevasticaStaging
 GO
 
+DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[ProductionEmployee];
+DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Customer];
+DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Product];
+DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Sales];
+
+
 --1. Get Data From Customer Table
 
 SELECT 
