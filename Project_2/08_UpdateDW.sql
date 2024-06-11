@@ -40,7 +40,7 @@ WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales))--MAX(factSal
 
 --SELECT * FROM CataschevasticaDW.dbo.FactSales;
 
--- SCD TYPE 2
+-- SCD TYPE 2 DimEmployee
 
 INSERT INTO CataschevasticaStaging.dbo.ProductionEmployee VALUES (14, 'Jim',	'White',	'Production')
 
@@ -75,6 +75,7 @@ ALTER TABLE FactSales
 CHECK CONSTRAINT FK_employee
 GO
 
+
 DELETE FROM CataschevasticaDW.dbo.DimEmployee
 WHERE EmployeeKey =14
 
@@ -84,3 +85,61 @@ WHERE EmployeeKey =13
 
 SELECT * FROM CataschevasticaStaging.dbo.ProductionEmployee
 SELECT * FROM CataschevasticaDW.dbo.DimEmployee
+
+
+
+-- SCD TYPE 2 DimCustomer
+
+
+/* One insert and  one update to check that everything works
+
+INSERT INTO CataschevasticaStaging.dbo.Customer (FirstName, LastName, CompanyName, City, Region, PostalCode, Country) VALUES 
+('Alice', 'Lee', 'Alice Enterprises', 'Metropolis', 'Region1', 12345, 'France')
+
+UPDATE CataschevasticaStaging.dbo.Customer
+SET Country = 'France'
+WHERE CustomerID=12
+*/ 
+
+
+ALTER TABLE FactSales
+NOCHECK CONSTRAINT FK_customer
+GO
+
+INSERT INTO DimCustomer (CustomerID, CustomerName, CompanyName, CustomerCountry, CustomerRegion, CustomerCity, CustomerPostalCode,
+							RowIsCurrent, RowStartDate, RowEndDate)
+SELECT CustomerID, CustomerName, CompanyName, Country, Region, City, PostalCode, 1, SYSDATETIME(), '9999-12-31'
+FROM(
+    MERGE DimCustomer AS [Target]
+    USING CataschevasticaStaging.dbo.Customer AS [Source]
+    ON Target.CustomerID = Source.CustomerID 
+        WHEN MATCHED AND RowIsCurrent = 1 AND 
+			(CONCAT(Source.FirstName, ' ', Source.LastName) <> Target.CustomerName 
+			OR Source.CompanyName <> Target.CompanyName
+			OR Source.Country <> Target.CustomerCountry
+			OR Source.Region <> Target.CustomerRegion
+			OR Source.City <> Target.CustomerCity
+			OR Source.PostalCode <> Target.CustomerPostalCode)
+            THEN UPDATE SET target.RowIsCurrent = 0, Target.RowEndDate = SYSDATETIME()
+        WHEN NOT MATCHED BY TARGET 
+            THEN INSERT (CustomerID, CustomerName, CompanyName, CustomerCountry, CustomerRegion, CustomerCity, CustomerPostalCode, 
+							RowStartDate, RowEndDate)
+                VALUES (source.CustomerID, CONCAT(Source.FirstName, ' ', Source.LastName), Source.CompanyName, Source.Country, Source.Region, Source.City, Source.PostalCode,
+							SYSDATETIME(), '9999-12-31')
+        WHEN NOT MATCHED BY Source 
+            THEN UPDATE SET target.RowEndDate = SYSDATETIME(), TARGET.RowIsDeleted = 1
+    OUTPUT Source.CustomerID, CONCAT(Source.FirstName, ' ', Source.LastName) AS CustomerName, Source.CompanyName, Source.Country, Source.Region, Source.City, Source.PostalCode, $Action AS ActionName
+) AS [Merge]
+WHERE ActionName = 'UPDATE'
+AND CustomerID IS NOT NULL;
+
+
+ALTER TABLE FactSales
+CHECK CONSTRAINT FK_customer
+GO
+
+
+/*Check that both insertion of new records and update works 
+SELECT * FROM CataschevasticaStaging.dbo.Customer
+SELECT * FORM DimCustomer
+*/
