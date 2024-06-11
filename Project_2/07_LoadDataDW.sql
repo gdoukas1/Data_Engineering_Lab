@@ -1,7 +1,7 @@
 USE CataschevasticaDW
 GO
 
--- Only for the first load
+-- ONLY FOR THE FIRST LOAD! RUN ONLY ONCE
 
 DELETE FROM FactSales;
 DELETE FROM DimProduct;
@@ -53,4 +53,30 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
 
-SELECT * FROM CataschevasticaDW.dbo.FactSales
+-- SELECT * FROM CataschevasticaDW.dbo.FactSales
+
+
+USE CataschevasticaStaging
+GO
+
+CREATE VIEW StagingSales AS 
+SELECT Sales.OrderID, 
+	Sales.OrderStatus, 
+	DimProduct.ProductKey, 
+	DimCustomer.CustomerKey, 
+	DimEmployee.EmployeeKey, 
+	Sales.DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT) AS OrderDateKey,
+    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT) AS ShippedDateKey,
+	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT) AS RecievedDateKey,
+	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT) AS CancellationDateKey,
+    UnitsofProduct AS Quantity,
+	[Sales].[Price], 
+	[Sales].[Price]*[UnitsofProduct] AS ExtendedPriceAmount 
+    FROM CataschevasticaStaging.dbo.Sales
+	INNER JOIN CataschevasticaDW.dbo.DimCustomer
+		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = Sales.CustomerId
+	INNER JOIN CataschevasticaDW.dbo.DimEmployee
+		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = Sales.EmployeeId
+	INNER JOIN CataschevasticaDW.dbo.DimProduct
+		ON CataschevasticaDW.dbo.DimProduct.SKU = Sales.SKU
