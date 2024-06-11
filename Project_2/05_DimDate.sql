@@ -252,30 +252,54 @@ END
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Epiphany'
     WHERE [Month] = 1 AND [DayOfMonth]  = 6
--- Clean Monday: Mar 18 (2024 date)
-   UPDATE [dbo].[DimDate]
+-- Clean Monday: Movable Date
+	UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Clean Monday'
-    WHERE [Month] = 3 AND [DayOfMonth]  = 18
+    WHERE [Month] = 2 AND [DayOfMonth]  = 27 AND [Year] = 2023
+	UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Clean Monday'
+    WHERE [Month] = 3 AND [DayOfMonth]  = 18 AND [Year] = 2024
+	UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Clean Monday'
+    WHERE [Month] = 3 AND [DayOfMonth]  = 3 AND [Year] = 2025
 -- National Holiday: Mar 25
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'National Holiday'
     WHERE [Month] = 3 AND [DayOfMonth]  = 25
--- 	Orthodox Good Friday: May 3 (2024 date)
+-- 	Orthodox Good Friday: Movable Date
+	UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Good Friday'
+    WHERE [Month] = 4 AND [DayOfMonth]  = 14 AND [Year] = 2023
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Orthodox Good Friday'
-    WHERE [Month] = 5 AND [DayOfMonth]  = 3
--- Orthodox Easter Monday: May 6 (2024 date)
+    WHERE [Month] = 5 AND [DayOfMonth]  = 3 AND [Year] = 2024
+	UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Good Friday'
+    WHERE [Month] = 4 AND [DayOfMonth]  = 18 AND [Year] = 2025
+-- Orthodox Easter Monday: Movable Date
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Orthodox Easter Monday'
-    WHERE [Month] = 5 AND [DayOfMonth]  = 6
--- Labor Day: May 7 (2024 date)
+    WHERE [Month] = 4 AND [DayOfMonth]  = 17 AND [Year] = 2023
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Easter Monday'
+    WHERE [Month] = 5 AND [DayOfMonth]  = 6 AND [Year] = 2024
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Easter Monday'
+    WHERE [Month] = 4 AND [DayOfMonth]  = 21 AND [Year] = 2025
+-- Labor Day: May 1
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Labor Day'
     WHERE [Month] = 5 AND [DayOfMonth]  = 7
--- Orthodox Holy Spirit Monday: Jun 24 (2024 date)
+-- Orthodox Holy Spirit Monday: Movable Date
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Orthodox Holy Spirit Monday'
-    WHERE [Month] = 6 AND [DayOfMonth]  = 24
+    WHERE [Month] = 6 AND [DayOfMonth]  = 5 AND [Year] = 2023
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Holy Spirit Monday'
+    WHERE [Month] = 6 AND [DayOfMonth]  = 24 AND [Year] = 2024
+    UPDATE [dbo].[DimDate]
+        SET HolidayGR = 'Orthodox Holy Spirit Monday'
+    WHERE [Month] = 6 AND [DayOfMonth]  = 9 AND [Year] = 2025
 -- Dormition of the Holy Virgin: Aug 15
     UPDATE [dbo].[DimDate]
         SET HolidayGR = 'Dormition of the Holy Virgin'
