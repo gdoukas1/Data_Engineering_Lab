@@ -1,3 +1,20 @@
+USE Cataschevastica
+GO
+
+INSERT INTO ProductionEmployee (FirstName, LastName, DepartmentID) VALUES 
+('John', 'Stockton', 1),
+('Karl', 'Malone', 1),
+('Charles', 'Barkley', 1),
+('David', 'Robinson', 1),
+('Steve', 'Nash', 1);
+
+
+INSERT INTO Customer (FirstName, LastName, Email, Phone, Address, City, Region, PostalCode, Country, CompanyName) VALUES 
+('Jason', 'Kidd', 'jason.kidd@example.com', '555-666-2222', '651 Finnan St', 'Denver', 'Colorado', 11852, 'United States', 'Green Field'),
+('Kevin', 'Garnnett', 'kevin.garnnett@example.com', '334-414-7897', '651 Hollins St', 'San Francisco', 'California', 17030, 'United States', 'Metlen Holdings'),
+('Ruben', 'Del Olmo', 'ruben.delolmo@example.com', '313-090-8224', '75 Via Toledo St', 'Gracia', 'Catalonia', 15667, 'Spain', 'Fuera'),
+('Paul', 'Pierce', 'paul.pierce@example.com', '717-489-3233', '520 New Valley St', 'New Orleans', 'Louisiana', 12633, 'United States', 'Wesley Groovehorn'),
+('Pavlos', 'Iliadis', 'pavlos.iliadis@example.com', '875-314-1285', '16 Nikis St', 'Athens', 'Attica', 98266, 'Greece', 'Iliadis Constructions');
 
 
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 
@@ -30,4 +47,49 @@ INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, Cancelled
 ('completed', '2024-11-28 15:30:00', '2024-12-02 10:00:00', '2024-12-06 13:30:00', NULL, 7, 3, 12),
 ('cancelled', '2024-12-06 11:30:00', NULL, NULL, '2024-12-11 14:30:00', 4, 5, 8),
 ('in process', '2024-12-12 13:30:00', NULL, NULL, NULL, 2, 4, 11),
-('cancelled', '2024-12-19 11:00:00', NULL, NULL, '2024-12-23 10:30:00', 10, 9, 3),
+('cancelled', '2024-12-19 11:00:00', NULL, NULL, '2024-12-23 10:30:00', 10, 9, 3);
+
+
+INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct) VALUES 
+(26, 'SKU014', 150),
+(26, 'SKU005', 40),
+(27, 'SKU009', 20),
+(28, 'SKU008', 30),
+(29, 'SKU003', 120),
+(29, 'SKU001', 10),
+(30, 'SKU001', 120),
+(31, 'SKU005', 350),
+(32, 'SKU004', 200),
+(32, 'SKU014', 35),
+(33, 'SKU010', 220),
+(34, 'SKU012', 270),
+(35, 'SKU002', 50),
+(36, 'SKU008', 80),
+(37, 'SKU011', 110),
+(37, 'SKU004', 40),
+(37, 'SKU012', 70),
+(38, 'SKU002', 130),
+(39, 'SKU001', 100),
+(40, 'SKU015', 60),
+(41, 'SKU003', 350),
+(41, 'SKU014', 130),
+(42, 'SKU005', 20),
+(43, 'SKU002', 250),
+(44, 'SKU007', 80),
+(45, 'SKU008', 100),
+(45, 'SKU010', 180),
+(45, 'SKU013', 30),
+(46, 'SKU010', 90),
+(47, 'SKU007', 160),
+(48, 'SKU013', 70),
+(48, 'SKU004', 250),
+(49, 'SKU006', 50),
+(50, 'SKU012', 175),
+(51, 'SKU005', 350),
+(51, 'SKU008', 40),
+(52, 'SKU009', 30),
+(53, 'SKU005', 120),
+(53, 'SKU015', 65),
+(53, 'SKU013', 180),
+(54, 'SKU011', 10),
+(55, 'SKU001', 270);

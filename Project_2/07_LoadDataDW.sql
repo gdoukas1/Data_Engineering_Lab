@@ -2,6 +2,7 @@ USE CataschevasticaDW
 GO
 
 -- Only for the first load
+
 DELETE FROM FactSales;
 DELETE FROM DimProduct;
 DELETE FROM DimCustomer;
@@ -52,4 +53,4 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
 
-SELECt * FROM CataschevasticaDW.dbo.FactSales
+SELECT * FROM CataschevasticaDW.dbo.FactSales
