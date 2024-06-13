@@ -47,21 +47,21 @@ INSERT INTO ProductionEmployee (FirstName, LastName, DepartmentID) VALUES
 ('Mark', 'White', 1);
 
 INSERT INTO Customer (FirstName, LastName, Email, Phone, Address, City, Region, PostalCode, Country, CompanyName) VALUES 
-('Alice', 'Wright', 'alice.wright@example.com', '111-223-3333', '123 Elm St', 'Metropolis', 'Region1', 12345, 'CountryA', 'Alice Enterprises'),
-('Bob', 'Green', 'bob.green@example.com', '222-333-4464', '456 Oak St', 'Gotham', 'Region2', 23456, 'CountryB', 'Green Solutions'),
-('Charlie', 'Black', 'charlie.black@example.com', '337-444-5555', '789 Pine St', 'Star City', 'Region3', 34567, 'CountryC', 'Black Industries'),
-('Diana', 'Brown', 'diana.brown@example.com', '444-559-6666', '321 Maple St', 'Central City', 'Region4', 45678, 'CountryD', 'Brown Corp'),
-('Eve', 'White', 'eve.white@example.com', '555-666-7778', '654 Cedar St', 'Smallville', 'Region5', 56789, 'CountryE', 'White Enterprises'),
-('Frank', 'Gray', 'frank.gray@example.com', '666-777-8288', '987 Birch St', 'Hill Valley', 'Region6', 67890, 'CountryF', 'Gray Industries'),
-('Grace', 'Blue', 'grace.blue@example.com', '777-888-9099', '123 Spruce St', 'Sunnydale', 'Region7', 78901, 'CountryG', 'Blue Corp'),
-('Henry', 'Red', 'henry.red@example.com', '888-999-0010', '456 Redwood St', 'Raccoon City', 'Region8', 89012, 'CountryH', 'Red Enterprises'),
-('Ivy', 'Yellow', 'ivy.yellow@example.com', '994-000-1111', '789 Aspen St', 'Mystic Falls', 'Region9', 90123, 'CountryI', 'Yellow Solutions'),
-('Jack', 'Purple', 'jack.purple@example.com', '005-111-2222', '321 Fir St', 'Hogsmeade', 'Region10', 10112, 'CountryJ', 'Purple Corp'),
-('Kara', 'Pink', 'kara.pink@example.com', '111-222-3335', '654 Palm St', 'Springfield', 'Region11', 11223, 'CountryK', 'Pink Solutions'),
-('Liam', 'Orange', 'liam.orange@example.com', '221-333-4444', '987 Beech St', 'Shelbyville', 'Region12', 12334, 'CountryL', 'Orange Corp'),
-('Mia', 'Silver', 'mia.silver@example.com', '333-443-5555', '123 Cypress St', 'Atlantis', 'Region13', 13445, 'CountryM', 'Silver Enterprises'),
-('Noah', 'Gold', 'noah.gold@example.com', '444-555-6667', '456 Dogwood St', 'Emerald City', 'Region14', 14556, 'CountryN', 'Gold Solutions'),
-('Olivia', 'Platinum', 'olivia.platinum@example.com', '552-666-7777', '789 Alder St', 'Metropolis', 'Region1', 15667, 'CountryO', 'Platinum Corp');
+('Bastien', 'Sturm', 'bastien.sturm@example.com', '111-223-3333', '123 Elm St', 'Grenoble', 'Rhone-Alpes', 12345, 'France', 'Alice Enterprises'),
+('Leonor', 'Mendez', 'leonoer.mendez@example.com', '222-333-4464', '456 Oak St', 'Lisbon', 'Sintra', 23456, 'Portugal', 'Green Solutions'),
+('Gabriele', 'Fasani', 'gabriele.fasani@example.com', '337-444-5555', '789 Pine St', 'Travestere', 'Rome', 34567, 'Italy', 'Black Industries'),
+('Sonke', 'Sturm', 'sonke.storm@example.com', '444-559-6666', '321 Maple St', 'Hamburg', 'Rostock', 45678, 'Germany', 'Brown Corp'),
+('Diogo', 'Paco', 'diogo.paco@example.com', '555-666-7778', '654 Cedar St', 'Faro', 'Lagos', 56789, 'Portugal', 'White Enterprises'),
+('Joana', 'Clot', 'joana.clot@example.com', '666-777-8288', '987 Birch St', 'Costa Brava', 'Catalonia', 67890, 'Spain', 'Gray Industries'),
+('Christos', 'Antonopoulos', 'cris.antono@example.com', '777-888-9099', '123 Makrigianni', 'Athens', 'Chaidari', 78901, 'Greece', 'Blue Corp'),
+('Giannis', 'Kourouniotis', 'john.kourou@example.com', '888-999-0010', '63 Polykarpou', 'Athens', 'Peristeri', 89012, 'Greece', 'Red Enterprises'),
+('Ioanna', 'Tzani', 'ioanna.tzani@example.com', '994-000-1111', '7 Troon', 'Athens', 'Ano Petralona', 90123, 'CountryI', 'Yellow Solutions'),
+('Milinkovic', 'Savic', 'milinkovic.savic@example.com', '005-111-2222', '321 Fir St', 'Belgrade', 'Novsad', 10112, 'Serbia', 'Purple Corp'),
+('Edi', 'Seifo', 'edi.seifo@example.com', '111-222-3335', '654 Palm St', 'Tirana', 'Durcin', 11223, 'Albania', 'Pink Solutions'),
+('John', 'Terry', 'John.terry@example.com', '221-333-4444', '987 Beech St', 'London', 'Shoreditch', 12334, 'United Kingdom', 'Orange Corp'),
+('Claire', 'Delly', 'claire.delly@example.com', '333-443-5555', '123 Cypress St', 'Dublin', 'Cole', 13445, 'Ireland', 'Silver Enterprises'),
+('Kostas', 'Varas', 'kostas.varas@example.com', '444-555-6667', '46 Ilission', 'Athens', 'Ampelokipoi', 14556, 'Greece', 'Gold Solutions'),
+('Panos', 'Vasilopoulos', 'pan.vas@example.com', '552-666-7777', '78 Kiriadon', 'Athens', 'Koukaki', 15667, 'Greece', 'Platinum Corp');
 
 INSERT INTO LogisticsPartner (Name, Phone) VALUES 
 ('Speedy Delivery', '111-262-3333'),
@@ -134,6 +134,9 @@ INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, Cancelled
 ('in delivery', '2024-05-20 15:00:00', '2024-05-22 09:00:00', NULL, NULL, 14, 4, 14),
 ('in process', '2024-05-22 09:30:00', NULL, NULL, NULL, 4, 5, 2),
 ('in delivery', '2024-05-22 09:30:00', '2024-05-23 12:30:00', NULL, NULL, 3, 7, 11);
+('completed', '2024-08-15 15:00:00', '2024-08-20 10:00:00', '2024-08-27 12:00:00', NULL, 6, 3, 4),
+('completed', '2024-10-28 12:00:00', '2024-10-31 11:00:00', '2024-11-04 10:30:00', NULL, 11, 10, 5),
+('completed', '2024-12-25 10:00:00', '2024-12-27 14:30:00', '2024-12-31 16:00:00', NULL, 9, 1, 7),
 
 --to produce results for the daily report query
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 
