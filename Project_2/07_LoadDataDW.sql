@@ -55,13 +55,38 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 
 -- SELECT * FROM CataschevasticaDW.dbo.FactSales
 
-
 USE CataschevasticaStaging
 GO
 
-CREATE VIEW StagingSales AS 
-SELECT Sales.OrderID, 
+CREATE VIEW FactSalesView AS 
+SELECT factSales.OrderID,
+	factSales.OrderStatus, 
+	DimProduct.SKU AS ProductID,
+	DimProduct.ProductKey, 
+	factSales.CustomerKey, 
+	factSales.EmployeeKey, 
+	factSales.DeliveryPartnerID,
+    OrderDateKey,
+    ShippedDateKey,
+	RecievedDateKey,
+	CancellationDateKey,
+    factSales.Quantity,
+	factSales.Price, 
+	ExtendedPriceAmount,
+	factSales.RowIsCurrent 
+    FROM CataschevasticaDW.dbo.FactSales factSales
+	INNER JOIN CataschevasticaDW.dbo.DimProduct
+		ON CataschevasticaDW.dbo.DimProduct.ProductKey = FactSales.ProductKey
+
+
+/*
+USE CataschevasticaStaging
+GO
+
+CREATE VIEW SalesView AS 
+SELECT Sales.OrderID,
 	Sales.OrderStatus, 
+	Sales.SKU,
 	DimProduct.ProductKey, 
 	DimCustomer.CustomerKey, 
 	DimEmployee.EmployeeKey, 
@@ -80,3 +105,12 @@ SELECT Sales.OrderID,
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = Sales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = Sales.SKU
+GO
+
+
+SELECT * FROM CataschevasticaStaging.dbo.SalesView
+WHERE OrderID = 2
+
+SELECT * FROM CataschevasticaDW.dbo.FactSales
+SELECT * FROM CataschevasticaStaging.dbo.Sales
+*/

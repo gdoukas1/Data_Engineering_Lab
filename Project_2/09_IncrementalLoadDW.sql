@@ -3,32 +3,60 @@ GO
 
 -- Find New Rows
 
-SELECT  source.*
-	INTO DeltaLoad_Staging_New
-    FROM CataschevasticaStaging.dbo.StagingSales source
-	LEFT JOIN CataschevasticaDW.dbo.FactSales factSales
-		ON source.OrderID = factSales.OrderID AND source.ProductKey = factSales.ProductKey
-WHERE factSales.OrderID IS NULL;
+SELECT stagingSales.OrderID, stagingSales.OrderStatus, DimProduct.ProductKey, DimCustomer.CustomerKey, DimEmployee.EmployeeKey, stagingSales.DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT) AS OrderDateKey,
+    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT) AS ShippedDateKey,
+	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT) AS RecievedDateKey,
+	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT) AS CancellationDateKey,
+    UnitsofProduct AS Quantity, 
+	stagingSales.Price, 
+	stagingSales.Price * UnitsofProduct AS ExtendedPriceAmount
+INTO DeltaLoad_Staging_New
+FROM CataschevasticaStaging.dbo.Sales stagingSales
+LEFT JOIN CataschevasticaStaging.dbo.FactSalesView factSalesView
+	ON stagingSales.OrderID = factSalesView.OrderID AND stagingSales.SKU = factSalesView.ProductID
+INNER JOIN CataschevasticaDW.dbo.DimCustomer
+	ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
+INNER JOIN CataschevasticaDW.dbo.DimEmployee
+	ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
+INNER JOIN CataschevasticaDW.dbo.DimProduct
+	ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
+WHERE factSalesView.OrderID IS NULL AND DimProduct.RowIsCurrent = 1;
 
+/*
+SELECT * FROM CataschevasticaStaging.dbo.SalesView
+SELECT * FROM CataschevasticaDW.dbo.FactSales
+*/
 
--- Find Updated Orders while in process
+-- Find Modified Orders while in process
 
-SELECT  source.*
-	INTO DeltaLoad_Staging_Updated
-    FROM CataschevasticaStaging.dbo.StagingSales source
-	INNER JOIN CataschevasticaDW.dbo.FactSales factSales
-		ON source.OrderID = factSales.OrderID AND source.ProductKey = factSales.ProductKey
-WHERE source.OrderStatus = 'in process' AND source.Quantity <> factSales.Quantity 
+SELECT factSalesView.OrderID, factSalesView.OrderStatus, factSalesView.ProductKey, factSalesView.CustomerKey, factSalesView.EmployeeKey, factSalesView.DeliveryPartnerID,
+ 	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
+	stagingSales.UnitsofProduct AS Quantity,
+	factSalesView.Price, 
+	stagingSales.UnitsofProduct * factSalesView.Price AS ExtendedPriceAmount 
+INTO DeltaLoad_Staging_Updated
+FROM CataschevasticaStaging.dbo.Sales stagingSales
+INNER JOIN CataschevasticaStaging.dbo.FactSalesView factSalesView
+	ON (stagingSales.OrderID = factSalesView.OrderID AND stagingSales.SKU = factSalesView.ProductID)
+WHERE stagingSales.UnitsofProduct <> factSalesView.Quantity AND stagingSales.OrderStatus = 'in process' AND factSalesView.RowIsCurrent = 1
 
 
 -- Find Deleted products while order status is in process
 
-SELECT  factSales.*
+SELECT  factSalesView.OrderID, factSalesView.OrderStatus, factSalesView.ProductKey, factSalesView.CustomerKey, factSalesView.EmployeeKey, factSalesView.DeliveryPartnerID, 
+	factSalesView.OrderDateKey, factSalesView.ShippedDateKey, factSalesView.RecievedDateKey, factSalesView.CancellationDateKey, 
+	factSalesView.Quantity, factSalesView.Price, factSalesView.ExtendedPriceAmount
 INTO DeltaLoad_Staging_Deleted
-FROM CataschevasticaStaging.dbo.StagingSales source
-RIGHT JOIN CataschevasticaDW.dbo.FactSales factSales
-	ON source.OrderID = factSales.OrderID AND source.ProductKey = factSales.ProductKey
-WHERE source.OrderID IS NULL AND factSales.OrderStatus = 'in process' 
+FROM CataschevasticaStaging.dbo.Sales source
+RIGHT JOIN CataschevasticaStaging.dbo.FactSalesView factSalesView
+	ON source.OrderID = factSalesView.OrderID AND source.SKU = factSalesView.ProductID
+WHERE source.OrderID IS NULL AND factSalesView.OrderStatus = 'in process' AND factSalesView.RowIsCurrent = 1
+
+
+SELECT * FROM DeltaLoad_Staging_New
+SELECT * FROM DeltaLoad_Staging_Updated
+SELECT * FROM DeltaLoad_Staging_Deleted
 
 
 -- Update to mark historic rows
@@ -71,6 +99,8 @@ SELECT * FROM CataschevasticaStaging.dbo.Sales
 SELECT * FROM CataschevasticaDW.dbo.FactSales
 WHERE OrderID = 26
 
+--SELECT * FROM CataschevasticaStaging.dbo.Sales
+
 SELECT * FROM CataschevasticaStaging.dbo.StagingSales
 WHERE OrderID = 26
 
@@ -78,14 +108,14 @@ WHERE OrderID = 26
 
 
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerId, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
-VALUES (26, 'in process',3,	7,	11,	'2024-05-27 10:00:00.0000000',	NULL,	NULL,	NULL,	'SKU007', 'Brick', 100, 0.75)
+VALUES (26, 'in process', 3, 7,	11,	'2024-05-27 10:00:00.0000000',	NULL,	NULL,	NULL,	'SKU007', 'Brick', 100, 0.75)
 
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerId, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
 VALUES (56, 'in process', 3, 8, 12,	'2024-05-28 10:00:00.0000000',	NULL,	NULL,	NULL,	'SKU007', 'Brick', 200, 0.75)
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
 SELECT * FROM DeltaLoad_Staging_New;
-
+SELECT * FROM CataschevasticaStaging.dbo.SalesView
 
 
 UPDATE CataschevasticaStaging.dbo.Sales
@@ -99,20 +129,32 @@ WHERE OrderID =26
 
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
+WHERE OrderID =2
 
 DELETE 
 FROM CataschevasticaStaging.dbo.Sales
-WHERE OrderID = 2 AND SKU = 'SKU003'
+WHERE OrderID = 32 AND SKU = 'SKU004'
 
-SELECT * FROM CataschevasticaStaging.dbo.StagingSales
+SELECT * FROM CataschevasticaStaging.dbo.Sales
 WHERE OrderID = 2
 
 
 
-SELECT * FROM CataschevasticaStaging.dbo.StagingSales
-WHERE OrderID = 26
+SELECT * FROM CataschevasticaStaging.dbo.SalesView
+WHERE OrderID = 2
 
 SELECT * FROM CataschevasticaDW.dbo.FactSales
-WHERE OrderID = 26
-*/
+WHERE OrderID = 2
 
+SELECT * FROM CataschevasticaStaging.dbo.Sales
+WHERE OrderID = 2 AND SKU = 'SKU003'
+
+UPDATE CataschevasticaStaging.dbo.Sales
+SET UnitsofProduct = 9999
+WHERE OrderID = 2 AND SKU = 'SKU003'
+
+*/
+SELECT * FROM CataschevasticaDW.dbo.DimProduct
+
+INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerId, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
+VALUES (34,	'in process',  3, 9,	10,	'2024-02-26 17:00:00.0000000',	NULL,	NULL,	NULL,	'SKU003',	'Roofing Tile',	1111,	3.00)
