@@ -12,7 +12,7 @@ SELECT * FROM CataschevasticaDW.dbo.FactSales;
 UPDATE CataschevasticaStaging.dbo.Sales 
 SET OrderStatus = 'in delivery', ShipmentDate = SYSDATETIME()
 WHERE OrderID = 26
-*/
+
 
 -- Incremental Load of FactSales Table
 
@@ -37,7 +37,7 @@ SELECT stagingSales.OrderStatus, stagingSales.OrderID, DimProduct.ProductKey, Di
 WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales))
 	OR (stagingSales.OrderID = factSales.OrderID AND stagingSales.OrderStatus <> factSales.OrderStatus);
 
-/*
+
 SELECT * FROM CataschevasticaDW.dbo.FactSales;
 */
 
@@ -218,5 +218,8 @@ WHERE SKU = 'SKU015'
 SELECT * FROM CataschevasticaStaging.dbo.Product
 SELECT * FROM DimProduct
 
+UPDATE CataschevasticaStaging.dbo.Product
+SET Colour = 'Black' 
+WHERE SKU = 'SKU003'
 */
 

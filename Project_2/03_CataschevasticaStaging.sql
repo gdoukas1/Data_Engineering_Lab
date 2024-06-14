@@ -110,7 +110,6 @@ INNER JOIN Cataschevastica.dbo.OrderDetails odetails
 INNER JOIN Cataschevastica.dbo.Product p
 	ON odetails.SKU = p.SKU
 
-
 /*
 SELECT * FROM CataschevasticaStaging.dbo.Sales;
 

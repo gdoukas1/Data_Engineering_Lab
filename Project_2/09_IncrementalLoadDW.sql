@@ -39,7 +39,7 @@ INTO DeltaLoad_Staging_Updated
 FROM CataschevasticaStaging.dbo.Sales stagingSales
 INNER JOIN CataschevasticaStaging.dbo.FactSalesView factSalesView
 	ON (stagingSales.OrderID = factSalesView.OrderID AND stagingSales.SKU = factSalesView.ProductID)
-WHERE stagingSales.UnitsofProduct <> factSalesView.Quantity AND stagingSales.OrderStatus = 'in process' AND factSalesView.RowIsCurrent = 1
+WHERE stagingSales.UnitsofProduct <> factSalesView.Quantity AND stagingSales.OrderStatus = 'in process' 
 
 
 -- Find Deleted products while order status is in process
@@ -51,7 +51,7 @@ INTO DeltaLoad_Staging_Deleted
 FROM CataschevasticaStaging.dbo.Sales source
 RIGHT JOIN CataschevasticaStaging.dbo.FactSalesView factSalesView
 	ON source.OrderID = factSalesView.OrderID AND source.SKU = factSalesView.ProductID
-WHERE source.OrderID IS NULL AND factSalesView.OrderStatus = 'in process' AND factSalesView.RowIsCurrent = 1
+WHERE source.OrderID IS NULL AND factSalesView.OrderStatus = 'in process' 
 
 
 SELECT * FROM DeltaLoad_Staging_New
@@ -123,7 +123,7 @@ SET UnitsofProduct = 999
 WHERE OrderID = 26 AND SKU = 'SKU005'
 
 SELECT * FROM CataschevasticaStaging.dbo.DeltaLoad_Staging_Updated
-SELECT * FROM CataschevasticaStaging.dbo.StagingSales
+SELECT * FROM CataschevasticaStaging.dbo.Sales
 WHERE OrderID =26
 
 
@@ -144,7 +144,7 @@ SELECT * FROM CataschevasticaStaging.dbo.SalesView
 WHERE OrderID = 2
 
 SELECT * FROM CataschevasticaDW.dbo.FactSales
-WHERE OrderID = 2
+WHERE OrderID = 26
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
 WHERE OrderID = 2 AND SKU = 'SKU003'
@@ -157,4 +157,4 @@ WHERE OrderID = 2 AND SKU = 'SKU003'
 SELECT * FROM CataschevasticaDW.dbo.DimProduct
 
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerId, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
-VALUES (34,	'in process',  3, 9,	10,	'2024-02-26 17:00:00.0000000',	NULL,	NULL,	NULL,	'SKU003',	'Roofing Tile',	1111,	3.00)
+VALUES (56,	'in process',  3, 9,	10,	SYSDATETIME(),	NULL,	NULL,	NULL,	'SKU003',	'Roofing Tile',	1111,	3.00)

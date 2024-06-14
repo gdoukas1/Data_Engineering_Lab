@@ -71,7 +71,6 @@ CREATE TABLE DimProduct(
 --4. Create Sales Fact Table
 
 CREATE TABLE FactSales(
-	--SalesID INT IDENTITY NOT NULL,
 	OrderID INT NOT NULL,
 	OrderStatus VARCHAR(20) NOT NULL,
     ProductKey INT NOT NULL,

@@ -11,10 +11,16 @@ INSERT INTO ProductionEmployee (FirstName, LastName, DepartmentID) VALUES
 
 INSERT INTO Customer (FirstName, LastName, Email, Phone, Address, City, Region, PostalCode, Country, CompanyName) VALUES 
 ('Hakan', 'Soukour', 'Hakan.Soukour@example.com', '555-666-2222', '65 Ergin', 'Istanbul', 'Besiktas', 11852, 'Turkey', 'Green Field'),
-('Kostas', 'Grassos', 'kg.grass@example.com', '334-414-7897', '65 Irakleidon', 'Athens', 'tHISSIO', 17030, 'Greece', 'Metlen Holdings'),
+('Kostas', 'Grassos', 'kg.grass@example.com', '334-414-7897', '65 Irakleidon', 'Athens', 'thissio', 17030, 'Greece', 'Metlen Holdings'),
 ('Ruben', 'Del Olmo', 'ruben.delolmo@example.com', '313-090-8224', '75 Via Toledo St', 'Gracia', 'Catalonia', 15667, 'Spain', 'Fuera'),
 ('Xristina', 'Ktistaki', 'xri.ktist@example.com', '717-489-3233', '52 Kiparissias', 'Athens', 'Metaksourgio', 12633, 'Greece', 'Wesley Groovehorn'),
+('Pavlos', 'Iliadis', 'pavlos.iliadis@example.com', '875-314-1285', '16 Nikis St', 'Athens', 'Attica', 98266, 'Greece', 'Iliadis Constructions'),
+('Jason', 'Kidd', 'jason.kidd@example.com', '555-666-2222', '651 Finnan St', 'Denver', 'Colorado', 11852, 'United States', 'Green Field'),
+('Kevin', 'Garnnett', 'kevin.garnnett@example.com', '334-414-7897', '651 Hollins St', 'San Francisco', 'California', 17030, 'United States', 'Metlen Holdings'),
+('Ruben', 'Del Olmo', 'ruben.delolmo@example.com', '313-090-8224', '75 Via Toledo St', 'Gracia', 'Catalonia', 15667, 'Spain', 'Fuera'),
+('Paul', 'Pierce', 'paul.pierce@example.com', '717-489-3233', '520 New Valley St', 'New Orleans', 'Louisiana', 12633, 'United States', 'Wesley Groovehorn'),
 ('Pavlos', 'Iliadis', 'pavlos.iliadis@example.com', '875-314-1285', '16 Nikis St', 'Athens', 'Attica', 98266, 'Greece', 'Iliadis Constructions');
+
 
 
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 

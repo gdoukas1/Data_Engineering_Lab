@@ -72,11 +72,11 @@ SELECT factSales.OrderID,
 	CancellationDateKey,
     factSales.Quantity,
 	factSales.Price, 
-	ExtendedPriceAmount,
-	factSales.RowIsCurrent 
+	ExtendedPriceAmount
     FROM CataschevasticaDW.dbo.FactSales factSales
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.ProductKey = FactSales.ProductKey
+	WHERE FactSales.RowIsCurrent = 1;
 
 
 /*

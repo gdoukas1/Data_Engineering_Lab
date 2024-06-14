@@ -133,10 +133,10 @@ INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, Cancelled
 ('in delivery', '2024-05-15 11:00:00', '2024-05-18 13:00:00', NULL, NULL, 11, 11, 11),
 ('in delivery', '2024-05-20 15:00:00', '2024-05-22 09:00:00', NULL, NULL, 14, 4, 14),
 ('in process', '2024-05-22 09:30:00', NULL, NULL, NULL, 4, 5, 2),
-('in delivery', '2024-05-22 09:30:00', '2024-05-23 12:30:00', NULL, NULL, 3, 7, 11);
+('in delivery', '2024-05-22 09:30:00', '2024-05-23 12:30:00', NULL, NULL, 3, 7, 11),
 ('completed', '2024-08-15 15:00:00', '2024-08-20 10:00:00', '2024-08-27 12:00:00', NULL, 6, 3, 4),
 ('completed', '2024-10-28 12:00:00', '2024-10-31 11:00:00', '2024-11-04 10:30:00', NULL, 11, 10, 5),
-('completed', '2024-12-25 10:00:00', '2024-12-27 14:30:00', '2024-12-31 16:00:00', NULL, 9, 1, 7),
+('completed', '2024-12-25 10:00:00', '2024-12-27 14:30:00', '2024-12-31 16:00:00', NULL, 9, 1, 7);
 
 --to produce results for the daily report query
 INSERT INTO Orders (OrderStatus, SubmittedAt, DeliveryAt, CompletedAt, CancelledAt, CustomerID, EmployeeID, DeliveryPartnerID) VALUES 
