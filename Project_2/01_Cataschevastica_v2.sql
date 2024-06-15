@@ -107,7 +107,7 @@ CREATE TABLE ProductMaterials
 (
   SKU VARCHAR(50) NOT NULL,
   MaterialID INT NOT NULL,
-  RequiredUnitsOfRawMaterial DECIMAL(10,5) NOT NULL,
+  RequiredUnitsOfRawMaterial DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (SKU, MaterialID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU),
   FOREIGN KEY (MaterialID) REFERENCES RawMaterial(MaterialID)
@@ -119,10 +119,10 @@ CREATE TABLE OrderDetails
   SKU VARCHAR(50) NOT NULL,
   UnitsofProduct INT NOT NULL,
   ProductionStartDate DATETIME2 NOT NULL,
-  ProductionStopDate DATETIME2 NULL,
+  ProductionEndDate DATETIME2 NULL,
   ProductionStatus VARCHAR(20) NOT NULL,
   PRIMARY KEY (OrderID, SKU),
   FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU),
-  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('in production', 'completed', 'cancelled'))  --Can the production be cancelled?
+  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('in production', 'completed'))  --Can the production be cancelled?
 );

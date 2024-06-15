@@ -1,6 +1,8 @@
 USE CataschevasticaStaging
 GO
 
+-- NO LONGER USABLE (OLD VERSION)
+
 -- Find New Rows
 
 SELECT stagingSales.OrderID, stagingSales.OrderStatus, DimProduct.ProductKey, DimCustomer.CustomerKey, DimEmployee.EmployeeKey, stagingSales.DeliveryPartnerID,
@@ -153,8 +155,10 @@ UPDATE CataschevasticaStaging.dbo.Sales
 SET UnitsofProduct = 9999
 WHERE OrderID = 2 AND SKU = 'SKU003'
 
-*/
+
 SELECT * FROM CataschevasticaDW.dbo.DimProduct
 
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerId, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
 VALUES (56,	'in process',  3, 9,	10,	SYSDATETIME(),	NULL,	NULL,	NULL,	'SKU003',	'Roofing Tile',	1111,	3.00)
+
+*/

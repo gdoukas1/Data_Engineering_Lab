@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Customer];
 DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Product];
 DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Material];
 DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Sales];
+DROP TABLE IF EXISTS CataschevasticaStaging.dbo.[Production];
 
 --1. Get Data From Customer Table
 
@@ -102,6 +103,7 @@ INNER JOIN CataschevasticaV2.dbo.Supplier s
 
 
 -- 5. Get Data From Orders Table
+
 SELECT  
 	o.OrderID,
 	OrderStatus, 
@@ -123,12 +125,24 @@ INNER JOIN CataschevasticaV2.dbo.OrderDetails odetails
 INNER JOIN CataschevasticaV2.dbo.Product p
 	ON odetails.SKU = p.SKU
 
-/*
-SELECT * FROM CataschevasticaStaging.dbo.Sales;
 
-SELECT * FROM Cataschevastica.dbo.Orders o
-INNER JOIN Cataschevastica.dbo.OrderDetails odetails
-    ON o.OrderID = odetails.OrderID
-INNER JOIN Cataschevastica.dbo.Product p
-	ON odetails.SKU = p.SKU;
-*/
+
+SELECT odetails.OrderID,
+	odetails.SKU,
+	o.EmployeeID,
+	material.MaterialID,
+	odetails.ProductionStatus,
+	odetails.ProductionStartDate,
+	odetails.ProductionEndDate,
+	material.CostOfMaterial,
+	pmaterials.RequiredUnitsOfRawMaterial,
+	odetails.UnitsofProduct
+INTO CataschevasticaStaging.dbo.Production
+FROM CataschevasticaV2.dbo.Orders o
+INNER JOIN CataschevasticaV2.dbo.OrderDetails odetails
+	ON o.OrderID = odetails.OrderID
+INNER JOIN CataschevasticaV2.dbo.ProductMaterials pmaterials
+	ON odetails.SKU = pmaterials.SKU
+INNER JOIN CataschevasticaV2.dbo.RawMaterial material
+	ON pmaterials.MaterialID = material.MaterialID
+

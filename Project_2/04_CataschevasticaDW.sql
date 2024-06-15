@@ -84,5 +84,5 @@ CREATE TABLE FactSales(
     Quantity INT NOT NULL,
 	Price DECIMAL(10, 2) NOT NULL,
     ExtendedPriceAmount FLOAT NOT NULL,
-	RowIsCurrent INT DEFAULT 1 NOT NULL,
+	RowIsCurrent INT DEFAULT 1 NOT NULL
 );

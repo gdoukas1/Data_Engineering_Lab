@@ -55,7 +55,6 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 
 -- SELECT * FROM CataschevasticaDW.dbo.FactSales
 
-USE CataschevasticaStaging
 GO
 
 CREATE VIEW FactSalesView AS 

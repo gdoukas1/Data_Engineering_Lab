@@ -4,9 +4,11 @@ GO
 -- ONLY FOR THE FIRST LOAD! RUN ONLY ONCE
 
 DELETE FROM FactSales;
+DELETE FROM FactProduction;
 DELETE FROM DimProduct;
 DELETE FROM DimCustomer;
 DELETE FROM DimEmployee;
+DELETE FROM DimMaterial;
 
 
 -- 1
@@ -28,16 +30,20 @@ SELECT CustomerID, CONCAT(FirstName, ' ', LastName), CompanyName,
 --3
 
 INSERT INTO DimProduct(SKU, ProductName, Price, EstimatedTime, Length, Width, 
-	Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial)
+	Thickness, Weight, Colour, Quantity, ComplianceStandards)
 SELECT SKU, Name, Price, EstimatedTime, Length, Width, 
-	Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial
+	Thickness, Weight, Colour, Quantity, ComplianceStandards
 	FROM CataschevasticaStaging.dbo.Product
 
 
 -- 4
+
 INSERT INTO DimMaterial(MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierName)
 SELECT MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierOfMaterial
 FROM CataschevasticaStaging.dbo.Material
+
+
+
 --5
 
 INSERT INTO FactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
@@ -56,10 +62,51 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
+	WHERE OrderStatus <> 'in process'
 
--- SELECT * FROM CataschevasticaDW.dbo.FactSales
 
-USE CataschevasticaStaging
+
+INSERT INTO TempFactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+	OrderDateKey, Quantity, Price, ExtendedPriceAmount)
+SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
+    UnitsofProduct AS Quantity, 
+	stagingSales.Price,
+	stagingSales.Price*UnitsofProduct
+    FROM CataschevasticaStaging.dbo.Sales stagingSales
+	INNER JOIN CataschevasticaDW.dbo.DimCustomer
+		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
+	INNER JOIN CataschevasticaDW.dbo.DimEmployee
+		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
+	INNER JOIN CataschevasticaDW.dbo.DimProduct
+		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
+	WHERE OrderStatus = 'in process'
+
+
+/*
+SELECT * FROM CataschevasticaDW.dbo.FactSales
+SELECT * FROM CataschevasticaDW.dbo.TempFactSales
+SELECT * FROM CataschevasticaDW.dbo.FactProduction
+*/
+
+INSERT INTO FactProduction(OrderID, ProductKey, EmployeeKey, MaterialKey, ProductionStatus, 
+ProductionStartDateKey, ProductionEndDateKey, CostOfMaterial, AmountOfMaterialUsed, UnitsOfProduct, ExtendedCost)
+SELECT Production.OrderID, ProductKey, EmployeeKey, MaterialKey, ProductionStatus, 
+	CAST(FORMAT(ProductionStartDate,'yyyyMMdd') AS INT),
+	CAST(FORMAT(ProductionEndDate,'yyyyMMdd') AS INT),
+	Production.CostOfMaterial,
+	RequiredUnitsOfRawMaterial,
+	UnitsofProduct,
+	Production.CostOfMaterial *  RequiredUnitsOfRawMaterial * UnitsofProduct
+FROM CataschevasticaStaging.dbo.Production
+INNER JOIN CataschevasticaDW.dbo.DimProduct
+	ON Production.SKU = DimProduct.SKU
+INNER JOIN CataschevasticaDW.dbo.DimEmployee
+	ON Production.EmployeeID = DimEmployee.EmployeeID
+INNER JOIN CataschevasticaDW.dbo.DimMaterial
+	ON Production.MaterialID = DimMaterial.MaterialID
+
+
 GO
 
 CREATE VIEW FactSalesView AS 
@@ -82,7 +129,10 @@ SELECT factSales.OrderID,
 		ON CataschevasticaDW.dbo.DimProduct.ProductKey = FactSales.ProductKey
 	WHERE FactSales.RowIsCurrent = 1;
 
-SELECT * FROM CataschevasticaStaging.dbo.FactSalesView
+
+GO
+
+SELECT * FROM CataschevasticaDW.dbo.FactSalesView
 
 /*
 USE CataschevasticaStaging

@@ -56,8 +56,8 @@ CREATE TABLE DimProduct(
 	Colour VARCHAR(20) NOT NULL,
 	Quantity INT NOT NULL,
 	ComplianceStandards VARCHAR(255) NOT NULL,
-	MaterialName NVARCHAR(50) NOT NULL,
-	SupplierOfMaterial NVARCHAR(50) NOT NULL,
+	--MaterialName NVARCHAR(50) NOT NULL,
+	--SupplierOfMaterial NVARCHAR(50) NOT NULL,
     RowIsCurrent INT DEFAULT 1 NOT NULL,
     RowStartDate DATE DEFAULT '1899-12-31' NOT NULL,
     RowEndDate DATE DEFAULT '9999-12-31' NOT NULL,
@@ -101,7 +101,36 @@ CREATE TABLE FactSales(
     Quantity INT NOT NULL,
 	Price DECIMAL(10, 2) NOT NULL,
     ExtendedPriceAmount FLOAT NOT NULL,
-	RowIsCurrent INT DEFAULT 1 NOT NULL,
+	RowIsCurrent INT DEFAULT 1 NOT NULL
 );
 
+
+CREATE TABLE TempFactSales(
+	OrderID INT NOT NULL,
+	OrderStatus VARCHAR(20) NOT NULL,
+    ProductKey INT NOT NULL,
+    CustomerKey INT NOT NULL,
+    EmployeeKey INT NOT NULL,
+	DeliveryPartnerID INT NOT NULL,
+	OrderDateKey INT NOT NULL,
+    Quantity INT NOT NULL,
+	Price DECIMAL(10, 2) NOT NULL,
+    ExtendedPriceAmount FLOAT NOT NULL,
+);
+
+--6. Create Production Fact Table
+
+CREATE TABLE FactProduction(
+	OrderID INT NOT NULL,
+	ProductKey INT NOT NULL,
+	EmployeeKey INT NOT NULL,
+	MaterialKey INT NOT NULL,
+	ProductionStatus VARCHAR(20) NOT NULL,
+	ProductionStartDateKey INT NOT NULL,
+  	ProductionEndDateKey INT NULL,
+	CostOfMaterial DECIMAL(10,2) NOT NULL,
+	AmountOfMaterialUsed DECIMAL(10,2) NOT NULL,
+	UnitsOfProduct INT NOT NULL,
+	ExtendedCost FLOAT NOT NULL
+);
 

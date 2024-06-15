@@ -1,18 +1,6 @@
 USE CataschevasticaDW
 GO
 
-/*
-SELECT * FROM CataschevasticaStaging.dbo.Sales;
-
-INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerID, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
-VALUES (26,	'in process', 9, 7, 10, '2024-06-09 15:45:16.2900000',	NULL,	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
-
-SELECT * FROM CataschevasticaDW.dbo.FactSales;
-
-UPDATE CataschevasticaStaging.dbo.Sales 
-SET OrderStatus = 'in delivery', ShipmentDate = SYSDATETIME()
-WHERE OrderID = 26
-
 
 -- Incremental Load of FactSales Table
 
@@ -26,31 +14,70 @@ SELECT stagingSales.OrderStatus, stagingSales.OrderID, DimProduct.ProductKey, Di
 	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT),
     UnitsofProduct, [stagingSales].[Price], [stagingSales].[Price]*[UnitsofProduct]
     FROM CataschevasticaStaging.dbo.Sales stagingSales
+	LEFT JOIN CataschevasticaDW.dbo.FactSalesView factSalesView
+		ON stagingSales.OrderID = factSalesView.OrderID
+    INNER JOIN CataschevasticaDW.dbo.DimCustomer
+		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
+	INNER JOIN CataschevasticaDW.dbo.DimEmployee
+		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
+	INNER JOIN CataschevasticaDW.dbo.DimProduct
+		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU  
+WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSalesView))
+	OR (stagingSales.OrderID = factSalesView.OrderID AND stagingSales.OrderStatus <> factSalesView.OrderStatus AND stagingSales.SKU = factSalesView.ProductID);
+
+DELETE FROM TempFactSales
+
+INSERT INTO TempFactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+	OrderDateKey, Quantity, Price, ExtendedPriceAmount)
+SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
+    UnitsofProduct AS Quantity, 
+	stagingSales.Price,
+	stagingSales.Price*UnitsofProduct
+    FROM CataschevasticaStaging.dbo.Sales stagingSales
 	INNER JOIN CataschevasticaDW.dbo.DimCustomer
 		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
 	INNER JOIN CataschevasticaDW.dbo.DimEmployee
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
-	LEFT JOIN CataschevasticaDW.dbo.FactSales factSales
-		ON stagingSales.OrderID = factSales.OrderID
-WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales))
-	OR (stagingSales.OrderID = factSales.OrderID AND stagingSales.OrderStatus <> factSales.OrderStatus);
+	WHERE OrderStatus = 'in process'
 
 
+
+
+INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerID, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
+VALUES (69,	'in delivery', 9, 7, 10, '2024-06-09 15:45:16.2900000',	'2024-06-11 15:45:16.2900000',	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
+
+
+UPDATE CataschevasticaStaging.dbo.Sales 
+SET OrderStatus = 'completed', RecievedDate = SYSDATETIME()
+WHERE OrderID = 64
+
+
+
+SELECT * FROM CataschevasticaStaging.dbo.Sales
+WHERE OrderID = 64
+
+SELECT * FROM CataschevasticaStaging.dbo.Sales;
 SELECT * FROM CataschevasticaDW.dbo.FactSales;
+SELECT * FROM TempFactSales
 */
 
 --------------------------------------------------------------------------------------------
 
 -- SCD TYPE 2
 
-DELETE
-FROM CataschevasticaStaging.dbo.ProductionEmployee
-WHERE EmployeeID = 14
-
 ALTER TABLE FactSales
 NOCHECK CONSTRAINT FK_employee
+GO
+
+ALTER TABLE TempFactSales
+NOCHECK CONSTRAINT FK_employeeTemp
+GO
+
+ALTER TABLE FactProduction
+NOCHECK CONSTRAINT FK_employeeProd
 GO
 
 INSERT INTO DimEmployee (EmployeeID, EmployeeName, DepartmentName, RowIsCurrent, RowStartDate, RowEndDate, RowChangeReason)
@@ -76,7 +103,19 @@ ALTER TABLE FactSales
 CHECK CONSTRAINT FK_employee
 GO
 
+ALTER TABLE TempFactSales
+CHECK CONSTRAINT FK_employeeTemp
+GO
+
+ALTER TABLE FactProduction
+CHECK CONSTRAINT FK_employeeProd
+GO
+
 /*
+DELETE
+FROM CataschevasticaStaging.dbo.ProductionEmployee
+WHERE EmployeeID = 12
+
 INSERT INTO CataschevasticaStaging.dbo.ProductionEmployee VALUES (14, 'Jim', 'White', 'Production')
 
 UPDATE CataschevasticaStaging.dbo.ProductionEmployee
@@ -98,19 +137,12 @@ SELECT * FROM CataschevasticaDW.dbo.DimEmployee
 
 -- SCD TYPE 2 DimCustomer
 
-/* One insert and one update to check that everything works
-
-INSERT INTO CataschevasticaStaging.dbo.Customer (FirstName, LastName, CompanyName, City, Region, PostalCode, Country) VALUES 
-('Alice', 'Lee', 'Alice Enterprises', 'Metropolis', 'Region1', 12345, 'France')
-
-UPDATE CataschevasticaStaging.dbo.Customer
-SET Country = 'France'
-WHERE CustomerID = 12
-*/ 
-
-
 ALTER TABLE FactSales
 NOCHECK CONSTRAINT FK_customer
+GO
+
+ALTER TABLE TempFactSales
+NOCHECK CONSTRAINT FK_customerTemp
 GO
 
 INSERT INTO DimCustomer (CustomerID, CustomerName, CompanyName, CustomerCountry, CustomerRegion, CustomerCity, CustomerPostalCode,
@@ -145,6 +177,9 @@ ALTER TABLE FactSales
 CHECK CONSTRAINT FK_customer
 GO
 
+ALTER TABLE TempFactSales
+CHECK CONSTRAINT FK_customerTemp
+GO
 
 /* 
 -- One insert and one update to check that everything works
@@ -170,15 +205,22 @@ ALTER TABLE FactSales
 NOCHECK CONSTRAINT FK_product
 GO
 
-INSERT INTO DimProduct (SKU, ProductName, ProductStatus, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial, RowIsCurrent, RowStartDate, RowEndDate, RowChangeReason)
-SELECT SKU, Name, ProductStatus, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial, 1, SYSDATETIME(), '9999-12-31', ActionName
+ALTER TABLE TempFactSales
+NOCHECK CONSTRAINT FK_productTemp
+GO
+
+ALTER TABLE FactProduction
+NOCHECK CONSTRAINT FK_productProd
+GO
+
+INSERT INTO DimProduct (SKU, ProductName, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, RowIsCurrent, RowStartDate, RowEndDate, RowChangeReason)
+SELECT SKU, Name, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, 1, SYSDATETIME(), '9999-12-31', ActionName
 FROM(
     MERGE DimProduct AS [Target]
     USING CataschevasticaStaging.dbo.Product AS [Source]
     ON Target.SKU = Source.SKU 
         WHEN MATCHED AND RowIsCurrent = 1 AND 
-        (Source.Name <> Target.ProductName 
-        OR Source.ProductStatus <> Target.ProductStatus 
+        (Source.Name <> Target.ProductName  
         OR Source.Price <> Target.Price 
 		OR Source.EstimatedTime <> Target.EstimatedTime 
         OR Source.Length <> Target.Length 
@@ -187,16 +229,15 @@ FROM(
 		OR Source.Weight <> Target.Weight 
         OR Source.Colour <> Target.Colour 
         OR Source.Quantity <> Target.Quantity 
-        OR Source.ComplianceStandards <> Target.ComplianceStandards 
-		OR Source.MaterialName <> Target.MaterialName 
-        OR Source.SupplierOfMaterial <> Target.SupplierOfMaterial)
+        OR Source.ComplianceStandards <> Target.ComplianceStandards )
             THEN UPDATE SET target.RowIsCurrent = 0, Target.RowEndDate = SYSDATETIME()
         WHEN NOT MATCHED BY TARGET 
-            THEN INSERT (SKU, ProductName, ProductStatus, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial, RowStartDate, RowEndDate)
-                VALUES (Source.SKU, Source.Name, Source.ProductStatus, Source.Price, Source.EstimatedTime, Source.Length, Source.Width, Source.Thickness, Source.Weight, Source.Colour, Source.Quantity, Source.ComplianceStandards, Source.MaterialName, Source.SupplierOfMaterial, SYSDATETIME(), '9999-12-31')
+            THEN INSERT (SKU, ProductName, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, RowStartDate, RowEndDate)
+                VALUES (Source.SKU, Source.Name, Source.Price, Source.EstimatedTime, Source.Length, Source.Width, Source.Thickness, Source.Weight, 
+                    Source.Colour, Source.Quantity, Source.ComplianceStandards, SYSDATETIME(), '9999-12-31')
         WHEN NOT MATCHED BY Source 
             THEN UPDATE SET target.RowEndDate = SYSDATETIME(), Target.RowIsCurrent = 0, Target.RowIsDeleted = 1, Target.RowChangeReason = 'DELETE'
-    OUTPUT Source.SKU, Source.Name, Source.ProductStatus, Source.Price, Source.EstimatedTime, Source.Length, Source.Width, Source.Thickness, Source.Weight, Source.Colour, Source.Quantity, Source.ComplianceStandards, Source.MaterialName, Source.SupplierOfMaterial, $Action AS ActionName
+    OUTPUT Source.SKU, Source.Name, Source.Price, Source.EstimatedTime, Source.Length, Source.Width, Source.Thickness, Source.Weight, Source.Colour, Source.Quantity, Source.ComplianceStandards, $Action AS ActionName
 ) AS [Merge]
 WHERE ActionName = 'UPDATE'
 AND SKU IS NOT NULL;
@@ -205,21 +246,75 @@ ALTER TABLE FactSales
 CHECK CONSTRAINT FK_product
 GO
 
+ALTER TABLE TempFactSales
+CHECK CONSTRAINT FK_productTemp
+GO
+
+ALTER TABLE FactProduction
+CHECK CONSTRAINT FK_productProd
+GO
+
+
+
 /*
-INSERT INTO CataschevasticaStaging.dbo.Product (SKU, Name, ProductStatus, Price, EstimatedTime, Length, Width, Thickness, Weight, Colour, Quantity, ComplianceStandards, MaterialName, SupplierOfMaterial)
-VALUES ()
 
 UPDATE CataschevasticaStaging.dbo.Product
-SET EstimatedTime = 999
-WHERE SKU = 'SKU015'
+SET Length = 8888.00
+WHERE SKU='SKU003'
 
--- Check that both insertion of new records and update works 
 
 SELECT * FROM CataschevasticaStaging.dbo.Product
-SELECT * FROM DimProduct
-
-UPDATE CataschevasticaStaging.dbo.Product
-SET Colour = 'Black' 
-WHERE SKU = 'SKU003'
+SELECT * FROM CataschevasticaDW.dbo.DimProduct
 */
 
+
+
+------------------------------------------------------------------
+-- SCD TYPE 2 DimMaterial
+
+
+ALTER TABLE FactProduction
+NOCHECK CONSTRAINT FK_materialProd
+GO
+
+INSERT INTO DimMaterial (MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierName,
+							RowIsCurrent, RowStartDate, RowEndDate, RowChangeReason)
+SELECT MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierOfMaterial, 1, SYSDATETIME(), '9999-12-31', ActionName
+FROM(
+    MERGE DimMaterial AS [Target]
+    USING CataschevasticaStaging.dbo.Material AS [Source]
+    ON Target.MaterialID = Source.MaterialID 
+        WHEN MATCHED AND RowIsCurrent = 1 AND 
+			(Source.MaterialName <> Target.MaterialName
+			OR Source.CostOfMaterial <> Target.CostOfMaterial
+			OR Source.SupplierID <> Target.SupplierID
+			OR Source.SupplierOfMaterial <> Target.SupplierName)
+            THEN UPDATE SET target.RowIsCurrent = 0, Target.RowEndDate = SYSDATETIME()
+        WHEN NOT MATCHED BY Target
+            THEN INSERT (MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierName, RowStartDate, RowEndDate)
+                VALUES (source.MaterialID, Source.MaterialName, Source.CostOfMaterial, Source.SupplierID, Source.SupplierOfMaterial,
+							SYSDATETIME(), '9999-12-31')
+        WHEN NOT MATCHED BY Source 
+            THEN UPDATE SET Target.RowEndDate = SYSDATETIME(), Target.RowIsCurrent = 0, Target.RowIsDeleted = 1, Target.RowChangeReason = 'DELETE'
+    OUTPUT Source.MaterialID, Source.MaterialName, Source.CostOfMaterial, Source.SupplierID, Source.SupplierOfMaterial, $Action AS ActionName
+) AS [Merge]
+WHERE ActionName = 'UPDATE'
+AND MaterialID IS NOT NULL;
+
+
+ALTER TABLE FactProduction
+CHECK CONSTRAINT FK_materialProd
+GO
+
+/* One insert and one update to check that everything works
+
+INSERT INTO CataschevasticaStaging.dbo.Material (MaterialID, MaterialName, CostOfMaterial, SupplierID, SupplierOfMaterial) VALUES 
+(16, 'plaster', 0.8, 1, 'ABC Materials')
+
+UPDATE CataschevasticaStaging.dbo.Material
+SET CostOfMaterial = 0.2
+WHERE MaterialID = 15
+
+SELECT * FROM CataschevasticaStaging.dbo.Material
+SELECT * FROM CataschevasticaDW.dbo.DimMaterial
+*/ 
