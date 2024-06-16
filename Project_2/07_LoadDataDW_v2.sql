@@ -130,7 +130,7 @@ CREATE VIEW ProductionMart AS
 	SELECT OrderID, ProductID, MaterialID, ProductionStatus, ProductKey, MaterialKey, EmployeeKey, 
 	ProductionStartDateKey, ProductionEndDateKey, CostOfMaterial, AmountOfMaterialUsed, UnitsOfProduct, ExtendedCost
 	FROM CataschevasticaDW.dbo.FactProduction
-	WHERE FactProduction.RowIsCurrent = 1
+	WHERE FactProduction.RowIsCurrent = 1 AND ProductionStatus <> 'cancelled'
 
 GO
 

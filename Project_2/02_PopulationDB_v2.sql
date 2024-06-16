@@ -313,6 +313,3 @@ INSERT INTO OrderDetails (OrderID, SKU, UnitsofProduct, ProductionStartDate, Pro
 (68, 'SKU002', 300, '2024-06-24 10:00:00', '2024-06-26 13:00:00', 'completed'),
 (68, 'SKU003', 200, '2024-06-24 15:00:00', '2024-06-26 15:00:00', 'completed');
 
-
-SELECT * FROM OrderDetails
-DELETE FROM OrderDetails

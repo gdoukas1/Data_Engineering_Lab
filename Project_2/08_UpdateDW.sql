@@ -172,7 +172,7 @@ SELECT stagingProd.OrderID, stagingProd.SKU, stagingProd.MaterialID, stagingProd
     factProduction.ExtendedCost
 INTO DeltaLoad_StagingProd_Updated
 FROM CataschevasticaStaging.dbo.Production stagingProd
-LEFT JOIN CataschevasticaDW.dbo.FactProduction factProduction
+INNER JOIN CataschevasticaDW.dbo.FactProduction factProduction
     ON (stagingProd.OrderID = factProduction.OrderID 
         AND stagingProd.SKU = factProduction.ProductID 
         AND stagingProd.MaterialID = factProduction.MaterialID)
@@ -184,10 +184,10 @@ INNER JOIN CataschevasticaDW.dbo.DimEmployee
     ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingProd.EmployeeId
 WHERE stagingProd.ProductionStatus <> factProduction.ProductionStatus;
 
-
+/*
 SELECT * FROM DeltaLoad_StagingProd_New
 SELECT * FROM DeltaLoad_StagingProd_Updated
-
+*/
 
 -- Update to mark historic rows
 
@@ -219,7 +219,11 @@ DROP TABLE IF EXISTS DeltaLoad_StagingProd_Updated;
 
 
 /*
-INSERT INTO CataschevasticaStaging.dbo.Production VALUES (69, 'SKU012',	1,	1,	'in production', SYSDATETIME(),	NULL,	0.15,	2.00,	200)
+INSERT INTO CataschevasticaStaging.dbo.Production VALUES (69, 'SKU012',	1,	1,	'not started', NULL, NULL,	0.15,	2.00,	200)
+
+UPDATE CataschevasticaStaging.dbo.Production
+SET ProductionStatus = 'cancelled'
+WHERE OrderID = 69 AND SKU = 'SKU012'
 
 UPDATE CataschevasticaStaging.dbo.Production
 SET ProductionStatus = 'completed', ProductionEndDate = SYSDATETIME()

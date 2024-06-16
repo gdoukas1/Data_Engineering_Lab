@@ -124,5 +124,5 @@ CREATE TABLE OrderDetails
   PRIMARY KEY (OrderID, SKU),
   FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU),
-  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('not started', 'in production', 'completed'))
+  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('not started', 'in production', 'completed', 'cancelled'))
 );

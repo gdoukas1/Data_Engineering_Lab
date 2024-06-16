@@ -128,7 +128,7 @@ CREATE TABLE FactProduction(
 	ProductKey INT NOT NULL,
 	MaterialKey INT NOT NULL,
 	EmployeeKey INT NOT NULL,
-	ProductionStartDateKey INT NOT NULL,
+	ProductionStartDateKey INT NULL,
   	ProductionEndDateKey INT NULL,
 	CostOfMaterial DECIMAL(10,2) NOT NULL,
 	AmountOfMaterialUsed DECIMAL(10,2) NOT NULL,
@@ -136,4 +136,3 @@ CREATE TABLE FactProduction(
 	ExtendedCost FLOAT NOT NULL,
 	RowIsCurrent INT DEFAULT 1 NOT NULL
 );
-
