@@ -4,32 +4,90 @@ GO
 
 -- Incremental Load of FactSales Table
 
-INSERT INTO CataschevasticaDW.dbo.FactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
-	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
-	Quantity, Price, ExtendedPriceAmount)
-SELECT stagingSales.OrderStatus, stagingSales.OrderID, DimProduct.ProductKey, DimCustomer.CustomerKey, DimEmployee.EmployeeKey, stagingSales.DeliveryPartnerID,
-    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
-    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT),
-	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT),
-	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT),
-    UnitsofProduct, [stagingSales].[Price], [stagingSales].[Price]*[UnitsofProduct]
+-- Find New Rows
+
+SELECT stagingSales.OrderID, stagingSales.SKU, stagingSales.OrderStatus, 
+    DimProduct.ProductKey, DimCustomer.CustomerKey, DimEmployee.EmployeeKey, stagingSales.DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT) AS OrderDateKey,
+    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT) AS ShippedDateKey,
+	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT) AS RecievedDateKey,
+	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT) AS CancellationDateKey,
+    UnitsofProduct, stagingSales.Price, 
+    stagingSales.Price*UnitsofProduct AS ExtendedPriceAmount
+    INTO DeltaLoad_Staging_New
     FROM CataschevasticaStaging.dbo.Sales stagingSales
-	LEFT JOIN CataschevasticaDW.dbo.FactSalesView factSalesView
-		ON stagingSales.OrderID = factSalesView.OrderID
+	LEFT JOIN CataschevasticaDW.dbo.FactSales factSales
+		ON stagingSales.OrderID = factSales.OrderID AND stagingSales.SKU = factSales.ProductID
     INNER JOIN CataschevasticaDW.dbo.DimCustomer
 		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
 	INNER JOIN CataschevasticaDW.dbo.DimEmployee
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU  
-WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSalesView))
-	OR (stagingSales.OrderID = factSalesView.OrderID AND stagingSales.OrderStatus <> factSalesView.OrderStatus AND stagingSales.SKU = factSalesView.ProductID);
+    WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales))
+        OR (factSales.OrderID IS NULL AND stagingSales.OrderStatus <> 'in process');
 
+
+-- Find Updated Orders (by status)
+
+SELECT stagingSales.OrderID, stagingSales.SKU, stagingSales.OrderStatus, 
+    factSales.ProductKey, factSales.CustomerKey, factSales.EmployeeKey, stagingSales.DeliveryPartnerID,
+    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT) AS OrderDateKey,
+    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT) AS ShippedDateKey,
+	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT) AS RecievedDateKey,
+	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT) AS CancellationDateKey,
+    UnitsofProduct, stagingSales.Price, 
+    stagingSales.Price*UnitsofProduct AS ExtendedPriceAmount
+    INTO DeltaLoad_Staging_Updated
+    FROM CataschevasticaStaging.dbo.Sales stagingSales
+	LEFT JOIN CataschevasticaDW.dbo.FactSales factSales
+		ON stagingSales.OrderID = factSales.OrderID AND stagingSales.SKU = factSales.ProductID
+    INNER JOIN CataschevasticaDW.dbo.DimCustomer
+		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = stagingSales.CustomerId
+	INNER JOIN CataschevasticaDW.dbo.DimEmployee
+		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
+	INNER JOIN CataschevasticaDW.dbo.DimProduct
+		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU  
+    WHERE stagingSales.OrderStatus <> factSales.OrderStatus;
+
+
+SELECT * FROM DeltaLoad_Staging_New
+SELECT * FROM DeltaLoad_Staging_Updated
+
+
+-- Update to mark historic rows
+
+UPDATE CataschevasticaDW.dbo.FactSales
+SET RowIsCurrent = 0
+FROM CataschevasticaDW.dbo.FactSales 
+INNER JOIN 
+DeltaLoad_Staging_Updated source
+ON FactSales.OrderID = source.OrderID AND FactSales.ProductID = source.SKU
+
+
+-- Insert new rows in data warehouse
+
+INSERT INTO CataschevasticaDW.dbo.FactSales(OrderID, ProductID, OrderStatus, 
+    ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
+	Quantity, Price, ExtendedPriceAmount)
+SELECT *
+FROM DeltaLoad_Staging_New
+UNION
+SELECT *
+FROM DeltaLoad_Staging_Updated
+
+
+-- Run each time: Drop staging tables
+DROP TABLE IF EXISTS DeltaLoad_Staging_New;
+DROP TABLE IF EXISTS DeltaLoad_Staging_Updated;
+
+-- RUN EACH TIME 
 DELETE FROM TempFactSales
 
-INSERT INTO TempFactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+INSERT INTO TempFactSales(OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
 	OrderDateKey, Quantity, Price, ExtendedPriceAmount)
-SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+SELECT OrderID, stagingSales.SKU, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
     CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
     UnitsofProduct AS Quantity, 
 	stagingSales.Price,
@@ -44,29 +102,145 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 	WHERE OrderStatus = 'in process'
 
 
-
-
+/*
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerID, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
 VALUES (69,	'in delivery', 9, 7, 10, '2024-06-09 15:45:16.2900000',	'2024-06-11 15:45:16.2900000',	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
 
 
 UPDATE CataschevasticaStaging.dbo.Sales 
+SET OrderStatus = 'in delivery', ShipmentDate = SYSDATETIME()
+WHERE OrderID = 63
+
+UPDATE CataschevasticaStaging.dbo.Sales 
 SET OrderStatus = 'completed', RecievedDate = SYSDATETIME()
 WHERE OrderID = 64
-
-
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
 WHERE OrderID = 64
 
+UPDATE CataschevasticaStaging.dbo.Sales 
+SET OrderStatus = 'completed', RecievedDate = SYSDATETIME()
+WHERE OrderID = 62
+
+SELECT * FROM CataschevasticaStaging.dbo.Sales
+WHERE OrderID = 62
+
 SELECT * FROM CataschevasticaStaging.dbo.Sales;
 SELECT * FROM CataschevasticaDW.dbo.FactSales;
-SELECT * FROM TempFactSales
+SELECT * FROM TempFactSales;
+SELECT * FROM SalesMart
+
 */
+
+---------------------------------------------------------------------------------------
+
+-- Incremental Load of FactProduction Table
+
+----------------------------------------------------------------------------------------
+
+SELECT stagingProd.OrderID, stagingProd.SKU, stagingProd.MaterialID, stagingProd.ProductionStatus,
+    DimProduct.ProductKey, DimMaterial.MaterialKey, DimEmployee.EmployeeKey,
+    CAST(FORMAT(ProductionStartDate,'yyyyMMdd') AS INT) AS ProductionStartDateKey,
+    CAST(FORMAT(ProductionEndDate,'yyyyMMdd') AS INT) AS ProductionEndDateKey,
+    stagingProd.CostOfMaterial,
+    stagingProd.RequiredUnitsOfRawMaterial AS AmountOfMaterialUsed,
+    stagingProd.UnitsOfProduct,
+    stagingProd.CostOfMaterial * RequiredUnitsOfRawMaterial * stagingProd.UnitsofProduct AS ExtendedCost
+INTO DeltaLoad_StagingProd_New
+FROM CataschevasticaStaging.dbo.Production stagingProd
+LEFT JOIN CataschevasticaDW.dbo.FactProduction factProduction
+    ON (stagingProd.OrderID = factProduction.OrderID 
+        AND stagingProd.SKU = factProduction.ProductID 
+        AND stagingProd.MaterialID = factProduction.MaterialID)
+INNER JOIN CataschevasticaDW.dbo.DimProduct
+    ON CataschevasticaDW.dbo.DimProduct.SKU = stagingProd.SKU
+INNER JOIN CataschevasticaDW.dbo.DimMaterial
+    ON CataschevasticaDW.dbo.DimMaterial.MaterialID = stagingProd.MaterialID
+INNER JOIN CataschevasticaDW.dbo.DimEmployee
+    ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingProd.EmployeeId
+WHERE factProduction.OrderID IS NULL 
+
+
+
+SELECT stagingProd.OrderID, stagingProd.SKU, stagingProd.MaterialID, stagingProd.ProductionStatus,
+    factProduction.ProductKey, factProduction.MaterialKey, factProduction.EmployeeKey,
+    CAST(FORMAT(ProductionStartDate,'yyyyMMdd') AS INT) AS ProductionStartDateKey,
+    CAST(FORMAT(ProductionEndDate,'yyyyMMdd') AS INT) AS ProductionEndDateKey,
+    factProduction.CostOfMaterial,
+    factProduction.AmountOfMaterialUsed,
+    factProduction.UnitsOfProduct,
+    factProduction.ExtendedCost
+INTO DeltaLoad_StagingProd_Updated
+FROM CataschevasticaStaging.dbo.Production stagingProd
+LEFT JOIN CataschevasticaDW.dbo.FactProduction factProduction
+    ON (stagingProd.OrderID = factProduction.OrderID 
+        AND stagingProd.SKU = factProduction.ProductID 
+        AND stagingProd.MaterialID = factProduction.MaterialID)
+INNER JOIN CataschevasticaDW.dbo.DimProduct
+    ON CataschevasticaDW.dbo.DimProduct.SKU = stagingProd.SKU
+INNER JOIN CataschevasticaDW.dbo.DimMaterial
+    ON CataschevasticaDW.dbo.DimMaterial.MaterialID = stagingProd.MaterialID
+INNER JOIN CataschevasticaDW.dbo.DimEmployee
+    ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingProd.EmployeeId
+WHERE stagingProd.ProductionStatus <> factProduction.ProductionStatus;
+
+
+SELECT * FROM DeltaLoad_StagingProd_New
+SELECT * FROM DeltaLoad_StagingProd_Updated
+
+
+-- Update to mark historic rows
+
+UPDATE CataschevasticaDW.dbo.FactProduction
+SET RowIsCurrent = 0
+FROM CataschevasticaDW.dbo.FactProduction 
+INNER JOIN 
+DeltaLoad_StagingProd_Updated source
+ON (source.OrderID = FactProduction.OrderID 
+        AND source.SKU = FactProduction.ProductID 
+        AND source.MaterialID = FactProduction.MaterialID)
+
+
+-- Insert new rows in data warehouse
+
+INSERT INTO CataschevasticaDW.dbo.FactProduction(OrderID, ProductID, MaterialID, ProductionStatus, 
+    ProductKey, MaterialKey, EmployeeKey, ProductionStartDateKey, ProductionEndDateKey,
+	CostOfMaterial, AmountOfMaterialUsed, UnitsOfProduct, ExtendedCost)
+SELECT *
+FROM DeltaLoad_StagingProd_New
+UNION
+SELECT *
+FROM DeltaLoad_StagingProd_Updated
+
+
+-- Run each time: Drop staging tables
+DROP TABLE IF EXISTS DeltaLoad_StagingProd_New;
+DROP TABLE IF EXISTS DeltaLoad_StagingProd_Updated;
+
+
+/*
+INSERT INTO CataschevasticaStaging.dbo.Production VALUES (69, 'SKU012',	1,	1,	'in production', SYSDATETIME(),	NULL,	0.15,	2.00,	200)
+
+UPDATE CataschevasticaStaging.dbo.Production
+SET ProductionStatus = 'completed', ProductionEndDate = SYSDATETIME()
+WHERE OrderID = 67 AND SKU = 'SKU015'
+
+SELECT * FROM CataschevasticaStaging.dbo.Production;
+SELECT * FROM CataschevasticaDW.dbo.FactProduction;
+*/
+
+
+SELECT * FROM SalesMart;
+SELECT * FROM ProductionMart;
+
 
 --------------------------------------------------------------------------------------------
 
 -- SCD TYPE 2
+
+--------------------------------------------------------------------------------------------
+
+-- SCD TYPE 2 DimEmployee
 
 ALTER TABLE FactSales
 NOCHECK CONSTRAINT FK_employee
@@ -260,7 +434,7 @@ GO
 
 UPDATE CataschevasticaStaging.dbo.Product
 SET Length = 8888.00
-WHERE SKU='SKU003'
+WHERE SKU='SKU005'
 
 
 SELECT * FROM CataschevasticaStaging.dbo.Product

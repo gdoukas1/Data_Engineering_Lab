@@ -145,4 +145,3 @@ INNER JOIN CataschevasticaV2.dbo.ProductMaterials pmaterials
 	ON odetails.SKU = pmaterials.SKU
 INNER JOIN CataschevasticaV2.dbo.RawMaterial material
 	ON pmaterials.MaterialID = material.MaterialID
-

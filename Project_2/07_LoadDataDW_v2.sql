@@ -4,6 +4,7 @@ GO
 -- ONLY FOR THE FIRST LOAD! RUN ONLY ONCE
 
 DELETE FROM FactSales;
+DELETE FROM TempFactSales;
 DELETE FROM FactProduction;
 DELETE FROM DimProduct;
 DELETE FROM DimCustomer;
@@ -46,10 +47,10 @@ FROM CataschevasticaStaging.dbo.Material
 
 --5
 
-INSERT INTO FactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+INSERT INTO FactSales(OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
 	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey,
 	Quantity, Price, ExtendedPriceAmount)
-SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+SELECT OrderID, stagingSales.SKU, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
     CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
     CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT),
 	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT),
@@ -62,13 +63,13 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
-	WHERE OrderStatus <> 'in process'
+	WHERE OrderStatus <> 'in process' AND DimCustomer.RowIsCurrent = 1 AND DimEmployee.RowIsCurrent = 1 AND DimProduct.RowIsCurrent = 1
 
 
 
-INSERT INTO TempFactSales(OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+INSERT INTO TempFactSales(OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
 	OrderDateKey, Quantity, Price, ExtendedPriceAmount)
-SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+SELECT OrderID, stagingSales.SKU, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
     CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT),
     UnitsofProduct AS Quantity, 
 	stagingSales.Price,
@@ -80,18 +81,14 @@ SELECT OrderStatus, OrderID, ProductKey, CustomerKey, EmployeeKey, DeliveryPartn
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU
-	WHERE OrderStatus = 'in process'
+	WHERE OrderStatus = 'in process' AND DimCustomer.RowIsCurrent = 1 AND DimEmployee.RowIsCurrent = 1 AND DimProduct.RowIsCurrent = 1
 
 
-/*
-SELECT * FROM CataschevasticaDW.dbo.FactSales
-SELECT * FROM CataschevasticaDW.dbo.TempFactSales
-SELECT * FROM CataschevasticaDW.dbo.FactProduction
-*/
+-- 6
 
-INSERT INTO FactProduction(OrderID, ProductKey, EmployeeKey, MaterialKey, ProductionStatus, 
+INSERT INTO FactProduction(OrderID, ProductID, MaterialID, ProductionStatus, ProductKey, MaterialKey, EmployeeKey,
 ProductionStartDateKey, ProductionEndDateKey, CostOfMaterial, AmountOfMaterialUsed, UnitsOfProduct, ExtendedCost)
-SELECT Production.OrderID, ProductKey, EmployeeKey, MaterialKey, ProductionStatus, 
+SELECT Production.OrderID, Production.SKU, Production.MaterialID, ProductionStatus, ProductKey, MaterialKey, EmployeeKey,
 	CAST(FORMAT(ProductionStartDate,'yyyyMMdd') AS INT),
 	CAST(FORMAT(ProductionEndDate,'yyyyMMdd') AS INT),
 	Production.CostOfMaterial,
@@ -105,67 +102,41 @@ INNER JOIN CataschevasticaDW.dbo.DimEmployee
 	ON Production.EmployeeID = DimEmployee.EmployeeID
 INNER JOIN CataschevasticaDW.dbo.DimMaterial
 	ON Production.MaterialID = DimMaterial.MaterialID
+WHERE DimMaterial.RowIsCurrent = 1 AND DimEmployee.RowIsCurrent = 1 AND DimProduct.RowIsCurrent = 1
 
 
-GO
-
-CREATE VIEW FactSalesView AS 
-SELECT factSales.OrderID,
-	factSales.OrderStatus, 
-	DimProduct.SKU AS ProductID,
-	DimProduct.ProductKey, 
-	factSales.CustomerKey, 
-	factSales.EmployeeKey, 
-	factSales.DeliveryPartnerID,
-    OrderDateKey,
-    ShippedDateKey,
-	RecievedDateKey,
-	CancellationDateKey,
-    factSales.Quantity,
-	factSales.Price, 
-	ExtendedPriceAmount
-    FROM CataschevasticaDW.dbo.FactSales factSales
-	INNER JOIN CataschevasticaDW.dbo.DimProduct
-		ON CataschevasticaDW.dbo.DimProduct.ProductKey = FactSales.ProductKey
-	WHERE FactSales.RowIsCurrent = 1;
-
-
-GO
-
-SELECT * FROM CataschevasticaDW.dbo.FactSalesView
 
 /*
-USE CataschevasticaStaging
-GO
-
-CREATE VIEW SalesView AS 
-SELECT Sales.OrderID,
-	Sales.OrderStatus, 
-	Sales.SKU,
-	DimProduct.ProductKey, 
-	DimCustomer.CustomerKey, 
-	DimEmployee.EmployeeKey, 
-	Sales.DeliveryPartnerID,
-    CAST(FORMAT(SubmissionDate,'yyyyMMdd') AS INT) AS OrderDateKey,
-    CAST(FORMAT(ShipmentDate,'yyyyMMdd') AS INT) AS ShippedDateKey,
-	CAST(FORMAT(RecievedDate,'yyyyMMdd') AS INT) AS RecievedDateKey,
-	CAST(FORMAT(CancellationDate,'yyyyMMdd') AS INT) AS CancellationDateKey,
-    UnitsofProduct AS Quantity,
-	[Sales].[Price], 
-	[Sales].[Price]*[UnitsofProduct] AS ExtendedPriceAmount 
-    FROM CataschevasticaStaging.dbo.Sales
-	INNER JOIN CataschevasticaDW.dbo.DimCustomer
-		ON CataschevasticaDW.dbo.DimCustomer.CustomerID = Sales.CustomerId
-	INNER JOIN CataschevasticaDW.dbo.DimEmployee
-		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = Sales.EmployeeId
-	INNER JOIN CataschevasticaDW.dbo.DimProduct
-		ON CataschevasticaDW.dbo.DimProduct.SKU = Sales.SKU
-GO
-
-
-SELECT * FROM CataschevasticaStaging.dbo.SalesView
-WHERE OrderID = 2
-
 SELECT * FROM CataschevasticaDW.dbo.FactSales
-SELECT * FROM CataschevasticaStaging.dbo.Sales
+SELECT * FROM CataschevasticaDW.dbo.TempFactSales
+SELECT * FROM CataschevasticaDW.dbo.FactProduction
 */
+
+GO
+
+CREATE VIEW SalesMart AS 
+	SELECT OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+	OrderDateKey, ShippedDateKey, RecievedDateKey, CancellationDateKey, Quantity, Price, ExtendedPriceAmount
+	FROM CataschevasticaDW.dbo.FactSales factSales
+	WHERE FactSales.RowIsCurrent = 1
+	UNION
+	(SELECT OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
+	OrderDateKey, NULL, NULL, NULL, Quantity, Price, ExtendedPriceAmount
+	FROM CataschevasticaDW.dbo.TempFactSales)
+
+GO
+
+CREATE VIEW ProductionMart AS 
+	SELECT OrderID, ProductID, MaterialID, ProductionStatus, ProductKey, MaterialKey, EmployeeKey, 
+	ProductionStartDateKey, ProductionEndDateKey, CostOfMaterial, AmountOfMaterialUsed, UnitsOfProduct, ExtendedCost
+	FROM CataschevasticaDW.dbo.FactProduction
+	WHERE FactProduction.RowIsCurrent = 1
+
+GO
+
+/*
+SELECT * FROM SalesMart
+SELECT * FROM ProductionMart
+*/
+
+

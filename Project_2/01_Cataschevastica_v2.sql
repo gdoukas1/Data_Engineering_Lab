@@ -118,11 +118,11 @@ CREATE TABLE OrderDetails
   OrderID INT NOT NULL,
   SKU VARCHAR(50) NOT NULL,
   UnitsofProduct INT NOT NULL,
-  ProductionStartDate DATETIME2 NOT NULL,
+  ProductionStartDate DATETIME2 NULL,
   ProductionEndDate DATETIME2 NULL,
   ProductionStatus VARCHAR(20) NOT NULL,
   PRIMARY KEY (OrderID, SKU),
   FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
   FOREIGN KEY (SKU) REFERENCES Product(SKU),
-  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('in production', 'completed'))  --Can the production be cancelled?
+  CONSTRAINT CHK_ProductionStatus CHECK (ProductionStatus IN ('not started', 'in production', 'completed'))
 );
