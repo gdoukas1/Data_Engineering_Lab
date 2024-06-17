@@ -125,7 +125,7 @@ INNER JOIN CataschevasticaV2.dbo.OrderDetails odetails
 INNER JOIN CataschevasticaV2.dbo.Product p
 	ON odetails.SKU = p.SKU
 
-
+-- 6. Get Data From Production Table
 
 SELECT odetails.OrderID,
 	odetails.SKU,
