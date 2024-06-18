@@ -24,7 +24,7 @@ SELECT stagingSales.OrderID, stagingSales.SKU, stagingSales.OrderStatus,
 		ON CataschevasticaDW.dbo.DimEmployee.EmployeeID = stagingSales.EmployeeId
 	INNER JOIN CataschevasticaDW.dbo.DimProduct
 		ON CataschevasticaDW.dbo.DimProduct.SKU = stagingSales.SKU  
-    WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales))
+    WHERE (stagingSales.OrderID > (SELECT MAX(OrderID) FROM factSales) AND stagingSales.OrderStatus <> 'in process')
         OR (factSales.OrderID IS NULL AND stagingSales.OrderStatus <> 'in process');
 
 
@@ -85,6 +85,9 @@ DROP TABLE IF EXISTS DeltaLoad_Staging_Updated;
 -- RUN EACH TIME Before the load
 DELETE FROM TempFactSales
 
+
+-- RUN EACH TIME
+
 INSERT INTO TempFactSales(OrderID, ProductID, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
 	OrderDateKey, Quantity, Price, ExtendedPriceAmount)
 SELECT OrderID, stagingSales.SKU, OrderStatus, ProductKey, CustomerKey, EmployeeKey, DeliveryPartnerID,
@@ -103,31 +106,28 @@ SELECT OrderID, stagingSales.SKU, OrderStatus, ProductKey, CustomerKey, Employee
 
 
 /*
-INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerID, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
-VALUES (69,	'in delivery', 9, 7, 10, '2024-06-09 15:45:16.2900000',	'2024-06-11 15:45:16.2900000',	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
-
 
 INSERT INTO CataschevasticaStaging.dbo.Sales(OrderID, OrderStatus, CustomerID, EmployeeID, DeliveryPartnerID, SubmissionDate, ShipmentDate, RecievedDate, CancellationDate, SKU, ProductName, UnitsofProduct, Price)
-VALUES (69,	'in process', 9, 7, 10, SYSDATETIME(),	NULL,	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
+VALUES (136, 'in process', 9, 7, 10, SYSDATETIME(),	NULL,	NULL,	NULL,	'SKU013',	'Aluminum Sheet',	170, 10.00)
 
 
 UPDATE CataschevasticaStaging.dbo.Sales 
 SET OrderStatus = 'in delivery', ShipmentDate = SYSDATETIME()
-WHERE OrderID = 63
+WHERE OrderID = 127
 
 UPDATE CataschevasticaStaging.dbo.Sales 
 SET OrderStatus = 'completed', RecievedDate = SYSDATETIME()
-WHERE OrderID = 64
+WHERE OrderID = 128
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
-WHERE OrderID = 64
+WHERE OrderID = 128
 
 UPDATE CataschevasticaStaging.dbo.Sales 
 SET OrderStatus = 'completed', RecievedDate = SYSDATETIME()
-WHERE OrderID = 62
+WHERE OrderID = 131
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales
-WHERE OrderID = 62
+WHERE OrderID = 131
 
 SELECT * FROM CataschevasticaStaging.dbo.Sales;
 SELECT * FROM CataschevasticaDW.dbo.FactSales;
